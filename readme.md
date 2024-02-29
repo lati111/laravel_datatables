@@ -4,12 +4,10 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
 
 ## Contents
 - [Usage](#usage)
-    - [Creating a dataprovider script (TS)](#creating-a-dataprovider-script)
+    - [Creating a dataprovider script (TS)](#creating-a-dataprovider-script-ts)
         - [Adding new functions](#adding-new-functions)
-    - [Creating a dataprovider in HTML](#creating-a-data-provider-in-html)
-        - [Searching](#searchable)
-        - [Sorting](#sortable)
-        - [Filters](#filterable)
+    - [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
+        - [Searching](#creating-a-searchbar)
 - [Templates](#templates)
     -  [Datatable](#datatable)
         - [Creating a datatable](#creating-a-datatable)
@@ -321,33 +319,6 @@ The pagination is the place where the page numbers will be added to to navigate 
 
 ```
 
-#### Creating sortable columns (datatable only)
-If you are using the provided `Datatable` template instead of using your own dataprovider, you can also use sortable columns. These come in the form of a `<th>` inside the `<thead>` of your `<table>`. This `<th>` must have the class `datatable-header`, have the `data-sortable` attribute set to true, and a `data-column` attribute with the column as defined in your `Sortable` trait. Below is an example.
-
-```html
-    <table
-        id="datatable12"
-        data-content-url="https://site.test/datatable2"
-        class="table dataprovider datatable"
-        ...
-        >
-        
-        <thead>
-            <tr>
-                <th class="datatable-header">column1</th>
-                <th class="datatable-header" data-sortable="true" data-column"column2">
-                    column2
-                </th>
-                <th class="datatable-header" data-sortable="true" data-column"column3">
-                    column3
-                </th>            
-            </tr>
-        </thead>
-        
-        ...
-    </table>
-```
-
 ## Templates
 This package comes with a number of pre-defined implementations you can use if they suit your purposes.
 
@@ -395,6 +366,7 @@ Furthermore, a column can have a range of optional attributes for futher customi
 - `data-sortable`: If this column can be sorted or not. False by default.
 - `data-sort-dir`: What direction this column is sorting in. Neutral by default.
 - `data-format`: A HTML string that will be placed in this column's cells. The text `[value]` will be replaced with the actual value on input.
+- `data-default`: A default value for the column if no value is given. By default none.
 
 ```html
 <th class="datatable-header"
@@ -402,6 +374,7 @@ Furthermore, a column can have a range of optional attributes for futher customi
     data-format="<span>[value] messages</span>"
     data-sortable="true"
     data-sort-dir="neutral"
+    data-default="0"
     data-visible="true">
 
     <div>

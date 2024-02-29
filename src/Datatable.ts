@@ -40,6 +40,7 @@ export class Datatable extends DataproviderBase {
 
             column.visible = (header.getAttribute('data-visible') ?? 'false') === 'true'
             column.format = header.getAttribute('data-format');
+            column.default = header.getAttribute('data-default');
 
             this.columns[name] = column;
 
