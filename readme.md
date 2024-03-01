@@ -4,7 +4,9 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
 
 ## Contents
 - [Usage](#usage)
-    - [Creating a dataprovider script (TS)](#creating-a-dataprovider-script-ts)
+    - [Using a dataprovider](#using-a-dataprovider)
+      - [Using dynamic urls](#using-dynamic-urls)
+    - [Creating a dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
         - [Adding new functions](#adding-new-functions)
     - [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
         - [Searching](#creating-a-searchbar)
@@ -13,13 +15,32 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
         - [Creating a datatable](#creating-a-datatable)
             -  [Creating datatable columns](#creating-datatable-columns)
     -  [Datatable selector](#datatable-selector)
-        -  [Creating a datatable selector](#creating-a-datatable-selector)
+        - [Creating a datatable selector](#creating-a-datatable-selector)
+        - [Using a datatable selector](#using-a-datatable-selector)
 - [Requirements](#requirements)
 
 ## Usage
 To allow for greater variety when it comes to actually creating your datatable, it is recommended you use your own version of this script, extending `DataproviderBase` with your own implementation. If you would rather use an out of the box solution, `Datatable` is available as both an example and fully functional version of this script.
 
-### Creating a dataprovider script (TS)
+### Using a dataprovider
+A dataprovider can be initialized by creating the class of the dataprovider (including passing either the dataprovider's ID, or the element itself) in either javascript or typescript, and calling it's init function. From there on out it will initialize itself as intended.
+
+```ts
+    datatable = new Datatable('overview')
+    await datatable.init();
+```
+
+#### Using dynamic urls
+Dataproviders are by default capable of swapping out the url at will, in case you need to change what data is being loaded. To do this, the dataprovider must have the `data-dynamic-url` attribute set to `true`. If this is the case, you can call the `modifyUrl` to modify the various urls originally given to the dataprovider. When enabled, the datatable will not load until the urls are modified for the first time
+
+```ts
+    const replacers = {"[user_id]": "42"} //The key, in this case '[user_id]', will be searched for in all url strings, and be replaced with the value
+    await datatable.modifyUrl(replacers)
+```
+
+In this example, the url `https://site.test/users/[user_id]/data` would become `https://site.test/users/42/data`
+
+### Creating a custom dataprovider script (TS)
 Start creating your own receiver class for a dataprovider, simply create a class extending `DataproviderBase`. Afterwards you must implement it's abstract methods.
 The first being `abstract fetchData(url: string): Promise<any>`, which should retrieve the json data from your dataprovider and convert it into an array filled with associative arrays.
 The second method is `abstract addItem(data:Array<any>): void` which should add one of the associative arrays from `fetchData` to your datatable in whatever way you want.
@@ -416,6 +437,13 @@ The select list has the following attributes:
     ...
     </table>
 </div>
+```
+
+### Using a datatable selector
+After a datatable selector has been intialized, you can get an array of identifiers belonging to each selected item by calling the `getSelectedItems` method.
+
+```ts
+    console.log(datatableSelector.getSelectedItems())
 ```
 
 ## Requirements

@@ -8,8 +8,14 @@ export abstract class DataproviderBase {
     /** @protected {string} The data url set by the dataprovider */
     public url: string;
 
-    /** @protected {boolean} Determines if this item should save it's history */
+    /** @protected {string} The template url for when dynamicUrl is enabled */
+    public urlTemplate: string;
+
+    /** @protected {boolean} Determines if this dataprovider should save it's history */
     protected history: boolean = true;
+
+    /** @protected {boolean} Determines if the url's may be changed  */
+    protected dynamicUrl: boolean = true;
 
     /** @protected {boolean} If true prevents from loading data */
     protected blockLoading: boolean = false;
@@ -54,6 +60,9 @@ export abstract class DataproviderBase {
 
     /** @protected {string|null} The url to retrieve the page count from */
     protected pagecountUrl: string | null = null;
+
+    /** @protected {string|null} The templated url to retrieve the page count from when dynamic urls are enabled*/
+    protected pagecountUrlTemplate: string | null = null;
 
     /** @protected {number|null} The amount of items per page */
     protected perpage: number | null = null;
@@ -100,6 +109,7 @@ export abstract class DataproviderBase {
         }
 
         this.url = dataUrl;
+        this.urlTemplate = dataUrl;
         this.body = this.dataprovider
     }
 
@@ -127,6 +137,12 @@ export abstract class DataproviderBase {
     protected setup(): void {
         this.initBody()
         this.initSpinner()
+
+        if (this.dataprovider.getAttribute('data-dynamic-url') === 'true') {
+            this.dynamicUrl = true;
+            this.blockLoading = true;
+        }
+
         this.initPagination()
         this.initSearchbar();
     }
@@ -189,6 +205,7 @@ export abstract class DataproviderBase {
 
         this.pagination = paginationElement;
         this.pagecountUrl = url;
+        this.pagecountUrlTemplate = url;
 
         //content init
         const contentID = paginationElement.getAttribute('data-content-ID')
@@ -509,6 +526,45 @@ export abstract class DataproviderBase {
     }
 
     /**
+     * Modifies the urls of this dataprovider and resets it
+     * @param {array} replacers Associative array filled with replacers
+     * @return void
+     */
+    public async modifyUrl(replacers:{[key:string]:string}) {
+        this.changeUrls(replacers);
+
+        this.blockLoading = false;
+        await this.load(true);
+    }
+
+    /**
+     * Changes all the urls on record for this dataprovider
+     * @param {array} replacers Associative array filled with replacers
+     * @return void
+     */
+    protected changeUrls(replacers:{[key:string]:string}): void {
+        this.url = this.changeUrl(this.urlTemplate, replacers);
+        if (this.pagecountUrl !== null) {
+            this.pagecountUrl = this.changeUrl(this.pagecountUrlTemplate!, replacers);
+        }
+    }
+
+    /**
+     * Changes the given url according to the given replacers
+     * @param {string} url The url that should be changed
+     * @param {array} replacers Associative array filled with replacers
+     * @return string The changed url
+     */
+    protected changeUrl(url:string, replacers:{[key:string]:string}): string {
+        let key: keyof typeof replacers;
+        for (key in replacers) {
+            url = url.replace(key, replacers[key])
+        }
+
+        return url;
+    }
+
+    /**
      * Loads data from the dataprovider with the selected query parameters applied
      * @param {boolean} shouldResetPagination Whether the page should be set to 1, false by default
      * @return void
@@ -569,7 +625,6 @@ export abstract class DataproviderBase {
      * @return {any} Returns the data from the url
      */
     abstract fetchData(url: string): any;
-
 
     /**
      * Gets an associative array containing the data of the current dataprovider state

@@ -9,6 +9,12 @@ export class DatatableSelector extends Datatable {
 
     protected selectedItems:{[key: string]: Item} = {};
 
+    /** @protected {string|null} Url to get list of selected items from */
+    protected selectionUrl: string | null = null;
+
+    /** @protected {string|null} Url to get list of selected items from when url is dynamic */
+    protected selectionUrlTemplate: string | null = null;
+
     /** @inheritDoc */
     protected setup() {
         super.setup();
@@ -41,22 +47,47 @@ export class DatatableSelector extends Datatable {
         th.classList.value = selectListElement.getAttribute('data-checkbox-header-cls') ?? '';
         this.dataprovider.querySelector('thead tr')!.prepend(th)
 
-        this.selectionInit();
+        this.selectionUrl = this.selectList?.getAttribute('data-selection-url');
+        this.selectionUrlTemplate = this.selectionUrl
+
+        this.loadSelections();
     }
 
-    protected async selectionInit() {
-        const selectionUrl = this.selectList?.getAttribute('data-selection-url');
-        if (selectionUrl === null || selectionUrl === undefined) {
+    /**
+     * Load the selections through the API
+     * @return void
+     */
+    protected async loadSelections() {
+        if (this.selectionUrl === null || this.selectionUrl === undefined || this.blockLoading) {
             return;
         }
 
-        const data = await this.fetchData(selectionUrl);
+        this.selectList!.innerHTML = '';
+        this.selectedItems = {};
+
+        const data = await this.fetchData(this.selectionUrl);
 
         let key: keyof typeof data;
         for (key in data) {
             const dataItem = data[key];
             const item = new Item(dataItem[this.itemIdentifier], dataItem[this.itemLabel]);
             this.selectItemEvent(item);
+        }
+    }
+
+    /** @inheritDoc */
+    public async modifyUrl(replacers:{[key:string]:string}) {
+        await super.modifyUrl(replacers);
+
+        await this.loadSelections();
+    }
+
+    /** @inheritDoc */
+    protected changeUrls(replacers:{[key:string]:string}): void {
+        super.changeUrls(replacers)
+
+        if (this.selectionUrl !== null) {
+            this.selectionUrl = this.changeUrl(this.selectionUrlTemplate!, replacers);
         }
     }
 
