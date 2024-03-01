@@ -41,6 +41,12 @@ export class Datatable extends DataproviderBase {
             column.visible = (header.getAttribute('data-visible') ?? 'false') === 'true'
             column.format = header.getAttribute('data-format');
             column.default = header.getAttribute('data-default');
+            column.cellCls = header.getAttribute('data-cell-cls') ?? '';
+
+            const size = header.getAttribute('data-size');
+            if (size !== null) {
+                column.size = parseInt(size);
+            }
 
             this.columns[name] = column;
 

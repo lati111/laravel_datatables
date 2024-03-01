@@ -5,6 +5,12 @@ export class Column {
     /** @protected {number} The index of the column when it comes to order in the table */
     index:number;
 
+    /** @protected {number|null} The percentage of the row this item should take up */
+    size:number|null = null;
+
+    /** @protected {string} Additional classes for the cell */
+    cellCls:string = '';
+
     /** @protected {string} The default value for a cell if none is set */
     default:string|null = null;
 
@@ -25,6 +31,7 @@ export class Column {
      */
     public createCell(value:string|null): HTMLTableCellElement {
         const td = document.createElement('td');
+        td.classList.value = this.cellCls;
         if (!this.visible) {
             td.classList.add('hidden');
         }
@@ -37,8 +44,12 @@ export class Column {
             }
         }
 
+        if (this.size !== null) {
+            td.style.width = this.size + '% !important'
+        }
+
         if (this.format !== null) {
-            td.innerHTML = this.format.replace('[VALUE]', value);
+            td.innerHTML = this.format.replace(/\[value]/gmi, value);
         } else {
             td.innerHTML = value;
         }
