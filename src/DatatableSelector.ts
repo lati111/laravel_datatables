@@ -5,7 +5,7 @@ export class DatatableSelector extends Datatable {
     protected selectList: Element | null = null;
 
     protected itemIdentifier: string = 'uuid';
-    protected itemLabel: string|null = null;
+    protected itemLabel: string = 'uuid';
 
     protected selectedItems:{[key: string]: Item} = {};
 
@@ -40,6 +40,24 @@ export class DatatableSelector extends Datatable {
         const th = document.createElement('th');
         th.classList.value = selectListElement.getAttribute('data-checkbox-header-cls') ?? '';
         this.dataprovider.querySelector('thead tr')!.prepend(th)
+
+        this.selectionInit();
+    }
+
+    protected async selectionInit() {
+        const selectionUrl = this.selectList?.getAttribute('data-selection-url');
+        if (selectionUrl === null || selectionUrl === undefined) {
+            return;
+        }
+
+        const data = await this.fetchData(selectionUrl);
+
+        let key: keyof typeof data;
+        for (key in data) {
+            const dataItem = data[key];
+            const item = new Item(dataItem[this.itemIdentifier], dataItem[this.itemLabel]);
+            this.selectItemEvent(item);
+        }
     }
 
     /** @inheritDoc */

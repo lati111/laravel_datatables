@@ -393,12 +393,13 @@ The `DatatableSelector` is a variant of the `Datatable` class that functions ide
 A `DatatableSelector` is mostly created like it's parent class `Datatable`, with a few minor changes. Specifically the creation of a container to display selected items in, and a few attributes to make the selecting work. On the `Datatable` element add the `datatable-selector` class and fill in the `data-selector-list-ID` attribute with the ID of the select list container.
 
 The select list has the following attributes:
-- `data-item-identifier`: The column name that has the identifier for this item, usually id or uuid. Is required
+- `data-selection-url`: The url which to preload selected items from. When unset does not preload items.
+- `data-item-identifier`: The column name that has the identifier for this item, usually id or uuid. Is required.
 - `data-item-label`: The column name that has the displayed name for this item, by default equal to the identifier.
-- `data-checkbox-header-cls`: Additional classes for the checkbox header
-- `data-item-cls`: Additional classes to be added to the display element
-- `data-item-label-cls`: Additional classes to be added to the display element's label
-- `data-item-close-button-cls`: Additional classes to be added to the display element's close button
+- `data-checkbox-header-cls`: Additional classes for the checkbox header.
+- `data-item-cls`: Additional classes to be added to the display element.
+- `data-item-label-cls`: Additional classes to be added to the display element's label.
+- `data-item-close-button-cls`: Additional classes to be added to the display element's close button.
 - `data-item-close-button-content`: What is displayed inside the close button. Normally `<span>X</span>`.
 
 ```html
