@@ -531,9 +531,9 @@ export abstract class DataproviderBase {
      * @return void
      */
     public async modifyUrl(replacers:{[key:string]:string}) {
+        this.blockLoading = false;
         this.changeUrls(replacers);
 
-        this.blockLoading = false;
         await this.load(true);
     }
 
