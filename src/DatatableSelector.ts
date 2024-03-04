@@ -58,8 +58,11 @@ export class DatatableSelector extends Datatable {
 
         this.selectionUrl = this.selectList?.getAttribute('data-selection-url');
         this.selectionUrlTemplate = this.selectionUrl
+    }
 
-        this.loadSelections();
+    public async init(): Promise<void> {
+        await this.loadSelections();
+        await super.init();
     }
 
     /**
@@ -130,6 +133,7 @@ export class DatatableSelector extends Datatable {
      * @return void
      */
     public selectItemEvent(item:Item): void {
+        //unmark
         if (item.identifier in this.selectedItems) {
             if (item.element !== null) {
                 item.element.remove();
@@ -144,6 +148,7 @@ export class DatatableSelector extends Datatable {
             return;
         }
 
+        //mark
         if (this.selectList !== null) {
             const element = document.createElement('div');
             element.classList.value = this.selectList.getAttribute('data-item-cls') ?? '';

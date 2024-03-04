@@ -17,6 +17,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
     -  [Datatable selector](#datatable-selector)
         - [Creating a datatable selector](#creating-a-datatable-selector)
         - [Using a datatable selector](#using-a-datatable-selector)
+          - [Events](#events) 
 - [Requirements](#requirements)
 
 ## Usage
