@@ -446,6 +446,20 @@ After a datatable selector has been intialized, you can get an array of identifi
     console.log(datatableSelector.getSelectedItems())
 ```
 
+#### Events
+The datatable selector class has a number of events that can be used for greater flexibility of use. Below follows a list of them, their trigger condition and their given parameters.
+
+- `onSelectEvent`: Triggers when an item is selected. Passes the datatable selector instance and the identifier of the added item.
+- `onSelectEvent`: Triggers when an item is deselected or removed. Passes the datatable selector instance and the identifier of the added item.
+
+```ts
+    function logSelecting(datatableSelector, id) {
+        console.log(id)
+    }
+
+    datatableSelector.onSelectEvent = logSelecting;
+```
+
 ## Requirements
 - An accessible API with a [Laravel dataprovider](https://github.com/lati111/laravel_dataproviders)
 - TypeScript >= 5.3

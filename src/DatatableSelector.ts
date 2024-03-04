@@ -15,6 +15,15 @@ export class DatatableSelector extends Datatable {
     /** @protected {string|null} Url to get list of selected items from when url is dynamic */
     protected selectionUrlTemplate: string | null = null;
 
+    /** @protected {boolean} If select events should be fired */
+    protected allowSelectEvents: boolean = true;
+
+    /** @protected {Function|null} Callback to trigger when an item is selected */
+    public onSelectEvent: Function| null = null;
+
+    /** @protected {Function|null} Callback to trigger when an item is deselected */
+    public onDeselectEvent: Function| null = null;
+
     /** @inheritDoc */
     protected setup() {
         super.setup();
@@ -67,12 +76,16 @@ export class DatatableSelector extends Datatable {
 
         const data = await this.fetchData(this.selectionUrl);
 
+        this.allowSelectEvents = false;
+
         let key: keyof typeof data;
         for (key in data) {
             const dataItem = data[key];
             const item = new Item(dataItem[this.itemIdentifier], dataItem[this.itemLabel]);
             this.selectItemEvent(item);
         }
+
+        this.allowSelectEvents = true;
     }
 
     /** @inheritDoc */
@@ -123,6 +136,10 @@ export class DatatableSelector extends Datatable {
                 item.element = null;
             }
 
+            if (this.onDeselectEvent !== null && this.allowSelectEvents) {
+                this.onDeselectEvent(this, item.identifier)
+            }
+
             delete this.selectedItems[item.identifier];
             return;
         }
@@ -148,6 +165,10 @@ export class DatatableSelector extends Datatable {
         }
 
         this.selectedItems[item.identifier] = item;
+        if (this.onSelectEvent !== null && this.allowSelectEvents) {
+            this.onSelectEvent(this, item.identifier)
+        }
+
     }
 
     /**
@@ -159,6 +180,10 @@ export class DatatableSelector extends Datatable {
     public removeSelectedItemEvent(identifier:string, e:Event) {
         const element = (e.target as Element).closest('.selected-element') as Element;
         element.remove();
+
+        if (this.onDeselectEvent !== null && this.allowSelectEvents) {
+            this.onDeselectEvent(this, identifier)
+        }
 
         if (this.selectList !== null) {
             const checkbox = this.body.querySelector('input[data-id="'+identifier+'"]') as HTMLInputElement|null
