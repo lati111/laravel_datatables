@@ -121,15 +121,14 @@ export class DatatableSelector extends Datatable {
         checkbox.type = 'checkbox';
 
         const item = new Item(data[this.itemIdentifier], data[this.itemLabel!])
+        if (data[this.itemIdentifier] in this.selectedItems) {
+            checkbox.checked = true;
+        }
 
         if (this.readonly) {
             checkbox.setAttribute('disabled', 'disabled');
         } else {
             checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
-        }
-
-        if (data[this.itemIdentifier] in this.selectedItems) {
-            checkbox.checked = true;
         }
 
         td.append(checkbox);
