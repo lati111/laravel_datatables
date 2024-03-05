@@ -28,6 +28,7 @@ export class DatatableSelector extends Datatable {
     protected setup() {
         super.setup();
 
+        //set selectlist element
         let selectListID = this.dataprovider.getAttribute('data-select-list-ID');
         if (selectListID === null) {
             selectListID = this.dataproviderID + '-select-list';
@@ -40,11 +41,13 @@ export class DatatableSelector extends Datatable {
 
         this.selectList = selectListElement;
 
+        //set item identifier
         const identifier = selectListElement.getAttribute('data-item-identifier');
         if (identifier !== null) {
             this.itemIdentifier = identifier;
         }
 
+        //set item label
         const label = selectListElement.getAttribute('data-item-label');
         if (label !== null) {
             this.itemLabel = label;
@@ -52,14 +55,20 @@ export class DatatableSelector extends Datatable {
             this.itemLabel = this.itemIdentifier
         }
 
+        //create checkbox header
         const th = document.createElement('th');
         th.classList.value = selectListElement.getAttribute('data-checkbox-header-cls') ?? '';
         this.dataprovider.querySelector('thead tr')!.prepend(th)
 
+        //set selection preload urls
         this.selectionUrl = this.selectList?.getAttribute('data-selection-url');
         this.selectionUrlTemplate = this.selectionUrl
+
+        //set readonly
+        this.readonly = (this.selectList?.getAttribute('data-readonly') === 'true') ?? false;
     }
 
+    /** @inheritDoc */
     public async init(): Promise<void> {
         await this.loadSelections();
         await super.init();
@@ -92,11 +101,6 @@ export class DatatableSelector extends Datatable {
     }
 
     /** @inheritDoc */
-    public async modifyUrl(replacers:{[key:string]:string}) {
-        await super.modifyUrl(replacers);
-    }
-
-    /** @inheritDoc */
     protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
         super.changeUrls(replacers)
 
@@ -117,7 +121,13 @@ export class DatatableSelector extends Datatable {
         checkbox.type = 'checkbox';
 
         const item = new Item(data[this.itemIdentifier], data[this.itemLabel!])
-        checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
+
+        if (this.readonly) {
+            checkbox.setAttribute('disabled', 'disabled');
+        } else {
+            checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
+        }
+
         if (data[this.itemIdentifier] in this.selectedItems) {
             checkbox.checked = true;
         }
@@ -159,11 +169,13 @@ export class DatatableSelector extends Datatable {
             label.textContent = item.label;
             element.append(label)
 
-            const button = document.createElement('button')
-            button.classList.value = this.selectList.getAttribute('data-item-close-button-cls') ?? '';
-            button.addEventListener('click', this.removeSelectedItemEvent.bind(this, item.identifier));
-            button.innerHTML =  this.selectList.getAttribute('data-item-close-button-content') ?? '<span>X</span>';
-            element.append(button)
+            if (this.readonly === false) {
+                const button = document.createElement('button')
+                button.classList.value = this.selectList.getAttribute('data-item-close-button-cls') ?? '';
+                button.addEventListener('click', this.removeSelectedItemEvent.bind(this, item.identifier));
+                button.innerHTML =  this.selectList.getAttribute('data-item-close-button-content') ?? '<span>X</span>';
+                element.append(button)
+            }
 
             item.element = element;
             this.selectList?.append(element)

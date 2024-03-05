@@ -20,6 +20,9 @@ export abstract class DataproviderBase {
     /** @protected {boolean} If true prevents from loading data */
     protected blockLoading: boolean = false;
 
+    /** @protected {boolean} Whether or not this dataprovider is readonly (has no effects on base) */
+    protected readonly: boolean = false;
+
     /** @protected {Element} The element content should be placed in */
     protected body: Element;
 

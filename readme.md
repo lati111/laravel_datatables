@@ -2,23 +2,26 @@ Laravel dataproviders readme
 ========================
 Laravel dataprovider receivers is a collection of extendable scripts and templates designed to interact with the [Laravel dataproviders](https://github.com/lati111/laravel_dataproviders) composer package.
 
-## Contents
-- [Usage](#usage)
-    - [Using a dataprovider](#using-a-dataprovider)
-      - [Using dynamic urls](#using-dynamic-urls)
-    - [Creating a dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
-        - [Adding new functions](#adding-new-functions)
-    - [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
-        - [Searching](#creating-a-searchbar)
-- [Templates](#templates)
-    -  [Datatable](#datatable)
-        - [Creating a datatable](#creating-a-datatable)
-            -  [Creating datatable columns](#creating-datatable-columns)
-    -  [Datatable selector](#datatable-selector)
-        - [Creating a datatable selector](#creating-a-datatable-selector)
-        - [Using a datatable selector](#using-a-datatable-selector)
-          - [Events](#events) 
-- [Requirements](#requirements)
+<!-- TOC -->
+* [Laravel dataproviders readme](#laravel-dataproviders-readme)
+  * [Usage](#usage)
+    * [Using a dataprovider](#using-a-dataprovider)
+      * [Using dynamic urls](#using-dynamic-urls)
+    * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
+      * [Adding new functions](#adding-new-functions)
+    * [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
+      * [Creating a searchbar](#creating-a-searchbar)
+      * [Creating the pagination](#creating-the-pagination)
+  * [Templates](#templates)
+    * [Datatable](#datatable)
+      * [Creating a datatable](#creating-a-datatable)
+        * [Creating datatable columns](#creating-datatable-columns)
+  * [Datatable selector](#datatable-selector)
+    * [Creating a datatable selector](#creating-a-datatable-selector)
+    * [Using a datatable selector](#using-a-datatable-selector)
+      * [Events](#events)
+  * [Requirements](#requirements)
+<!-- TOC -->
 
 ## Usage
 To allow for greater variety when it comes to actually creating your datatable, it is recommended you use your own version of this script, extending `DataproviderBase` with your own implementation. If you would rather use an out of the box solution, `Datatable` is available as both an example and fully functional version of this script.
@@ -423,6 +426,8 @@ The select list has the following attributes:
 - `data-item-label-cls`: Additional classes to be added to the display element's label.
 - `data-item-close-button-cls`: Additional classes to be added to the display element's close button.
 - `data-item-close-button-content`: What is displayed inside the close button. Normally `<span>X</span>`.
+- `data-readonly`: Whether this selector is readonly or not. False by default.
+
 
 ```html
 <div class="flex flex-col justify-center align-items max-w-xl gap-4">
