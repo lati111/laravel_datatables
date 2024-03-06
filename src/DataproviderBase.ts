@@ -612,7 +612,7 @@ export abstract class DataproviderBase {
             empty = false;
         }
 
-        if (empty) {
+        if (empty && !keepContents) {
             this.body.innerHTML = this.emptyBody;
         }
 
