@@ -568,11 +568,12 @@ export abstract class DataproviderBase {
     }
 
     /**
-     * Loads data from the dataprovider with the selected query parameters applied
-     * @param {boolean} shouldResetPagination Whether the page should be set to 1, false by default
+     * Loads data from the dataprovider with the selected query parameters applied.
+     * @param {boolean} shouldResetPagination Whether the page should be set to 1, false by default.
+     * @param {boolean} keepContents Whether the content should be kept instead of deleted. False by default.
      * @return void
      */
-    public async load(shouldResetPagination: boolean = false) {
+    public async load(shouldResetPagination: boolean = false, keepContents: boolean = false) {
         if (this.blockLoading) {
             return;
         }
@@ -584,7 +585,10 @@ export abstract class DataproviderBase {
         }
 
         // clear contents
-        this.body.innerHTML = '';
+        if (!keepContents) {
+            this.body.innerHTML = '';
+        }
+
         if (this.pagination !== null && shouldResetPagination) {
             this.page = 1;
         }
