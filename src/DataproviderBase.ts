@@ -32,6 +32,9 @@ export abstract class DataproviderBase {
     /** @protected {Element|null} The spinner element to be shown when loading */
     protected spinner: Element | null = null;
 
+    /** @protected {boolean} Whether to keep the body visible while loading if a spinner is present. */
+    protected showBodyDuringLoad: boolean = true;
+
     // pagination
 
     /** @protected {Element|null} The main pagination element */
@@ -182,6 +185,7 @@ export abstract class DataproviderBase {
         const spinnerElement = document.querySelector('#' + spinnerID + '.spinner')
         if (spinnerElement !== null) {
             this.spinner = spinnerElement;
+            this.showBodyDuringLoad = spinnerElement.getAttribute('data-hide-body') === 'false';
         }
     }
 
@@ -580,8 +584,11 @@ export abstract class DataproviderBase {
 
         // show the spinner if it is enabled
         if (this.spinner !== null) {
-            this.body.classList.add('hidden');
             this.spinner.classList.remove('hidden');
+        }
+
+        if (!this.showBodyDuringLoad) {
+            this.body.classList.add('hidden');
         }
 
         // clear contents
@@ -611,8 +618,11 @@ export abstract class DataproviderBase {
 
         // hide the spinner if it is enabled
         if (this.spinner !== null) {
-            this.body.classList.remove('hidden');
             this.spinner.classList.add('hidden');
+        }
+
+        if (!this.showBodyDuringLoad) {
+            this.body.classList.remove('hidden');
         }
 
         // refill the pagination

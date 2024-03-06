@@ -344,6 +344,10 @@ The pagination is the place where the page numbers will be added to to navigate 
 
 ```
 
+#### Creating a load indicator
+To give the dataprovider a smoother feeling while loading, you can add a load indicator by adding it's ID to the `data-spinner-ID` attribute on the dataprovider. When set every time loading occurs the load indicator is shown instead of the body. The load indicator can also be customized by adding one of the below attributes.
+- `data-hide-body`: Indicates that the body should be hidden during loading. When set to false the load indicator AND the body are visible. False by default.
+
 ## Templates
 This package comes with a number of pre-defined implementations you can use if they suit your purposes.
 
