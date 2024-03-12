@@ -539,7 +539,7 @@ export abstract class DataproviderBase {
      */
     public async modifyUrl(replacers:{[key:string]:string}) {
         this.blockLoading = false;
-        this.changeUrls(replacers);
+        await this.changeUrls(replacers);
 
         await this.load(true);
     }
@@ -549,7 +549,7 @@ export abstract class DataproviderBase {
      * @param {array} replacers Associative array filled with replacers
      * @return void
      */
-    protected changeUrls(replacers:{[key:string]:string}): void {
+    protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
         this.url = this.changeUrl(this.urlTemplate, replacers);
         if (this.pagecountUrl !== null) {
             this.pagecountUrl = this.changeUrl(this.pagecountUrlTemplate!, replacers);
