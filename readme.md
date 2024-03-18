@@ -44,6 +44,13 @@ Dataproviders are by default capable of swapping out the url at will, in case yo
 
 In this example, the url `https://site.test/users/[user_id]/data` would become `https://site.test/users/42/data`
 
+#### Using filtering
+The dataproviders also contain a dynamic filtering system, and support for that has been built into the receivers as well. You may add your own filters by implementing them through `getFilters()`. By default the option for filter checkboxes is also built in. If a checkbox has the `{dataproviderID}-filter-checkbox` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
+- `data-checked-operator`: The operator to pass to the filter when this element is checked, as declared in the filter.
+- `data-checked-value`: The value to filter on passed to the filter when this element is checked.
+- `data-unchecked-operator`: The operator to pass to the filter when this element is unchecked, as declared in the filter.
+- `data-unchecked-value`: The value to filter on passed to the filter when this element is unchecked.
+
 ### Creating a custom dataprovider script (TS)
 Start creating your own receiver class for a dataprovider, simply create a class extending `DataproviderBase`. Afterwards you must implement it's abstract methods.
 The first being `abstract fetchData(url: string): Promise<any>`, which should retrieve the json data from your dataprovider and convert it into an array filled with associative arrays.

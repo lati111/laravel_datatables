@@ -134,6 +134,7 @@ export abstract class DataproviderBase {
 
         this.initPagination()
         this.initSearchbar();
+        this.initFilters();
     }
 
     /**
@@ -289,6 +290,18 @@ export abstract class DataproviderBase {
 
             searchInputElement.addEventListener('keypress', loadFunc)
             this.searchbarInput = searchInputElement
+        }
+    }
+
+    /**
+     * Initialize the filter checkboxes (all checkboxes marked with the {dataproviderID}-filter-list class)
+     * @return void
+     */
+    protected initFilters() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            checkbox.addEventListener('change', this.load.bind(this, true, false))
         }
     }
 
@@ -511,6 +524,11 @@ export abstract class DataproviderBase {
             url.searchParams.set('search', this.searchterm);
         }
 
+        const filters = this.getFilters();
+        if (filters.length > 0) {
+            url.searchParams.set('filters', JSON.stringify(filters));
+        }
+
         return url;
     }
 
@@ -643,6 +661,11 @@ export abstract class DataproviderBase {
             }
         }
 
+        const filters = this.getFilters();
+        if (filters.length > 0) {
+            data.filters = filters;
+        }
+
         return data;
     }
 
@@ -688,8 +711,27 @@ export abstract class DataproviderBase {
                 this.searchterm = data.searchterm;
             }
         }
+
+        if (typeof data.filters === 'object') {
+            for (const key in data.filters) {
+                const filter = data.filters[key];
+                const filterCheckbox = document.querySelector('input[type="checkbox"][name="'+filter['filter']+'"].'+this.dataproviderID+'-filter-checkbox') as HTMLInputElement|null;
+                if (filterCheckbox === null) {
+                    continue;
+                }
+
+                if (filterCheckbox.getAttribute('data-checked-operator') === filter['operator']) {
+                    if (Object.hasOwn(filter, 'value') && filterCheckbox.getAttribute('data-checked-value') !== filter['value']) {
+                        continue;
+                    }
+
+                    filterCheckbox.checked = true;
+                }
+            }
+        }
     }
 
+    //| DOM manipulation
 
     /**
      * Adds an item to the dataprovider's body
@@ -697,4 +739,33 @@ export abstract class DataproviderBase {
      * @return void
      */
     abstract addItem(data:{[key:string]:any}): void;
+
+    /**
+     * Check all filter elements and combine the results into an array
+     * @return void
+     */
+    protected getFilters(): {'filter':string, 'operator'?:string, 'value'?:string}[] {
+        const filters: {'filter':string, 'operator'?:string, 'value'?:string}[] = [];
+        const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            const filter: {'filter':string, 'operator'?:string, 'value'?:string} = {
+                'filter': checkbox.name
+            };
+
+            if (checkbox.checked) {
+                filter.operator = checkbox.getAttribute('data-checked-operator') ?? undefined;
+                filter.value = checkbox.getAttribute('data-checked-value') ?? undefined;
+            } else {
+                filter.operator = checkbox.getAttribute('data-unchecked-operator') ?? undefined;
+                filter.value = checkbox.getAttribute('data-unchecked-value') ?? undefined;
+            }
+
+            if (filter.operator !== undefined && filter.operator !== null) {
+                filters.push(filter);
+            }
+        }
+
+        return filters;
+    }
 }
