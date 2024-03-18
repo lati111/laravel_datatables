@@ -1,27 +1,34 @@
 import {Datatable} from "./Datatable";
 
-export class DatatableSelector extends Datatable {
-    /** @protected {Element|null} List where selected items should be displayed */
-    protected selectList: Element | null = null;
+/**
+ * @inheritDoc
+ *
+ * @property {Element|null} selectList List where selected items should be displayed
+ * @property {string} itemIdentifier The identifier of an item. Used as the value, 'uuid' by default
+ * @property {string} itemLabel The label of an item. Used as the display text, equal to itemIdentifier by default
+ * @property {Array} selectedItems An associative array containing all the selected items
+ *
+ * @property {string|null} selectionUrl Url to get list of selected items from during the pre-load phase
+ * @property {string|null} selectionUrlTemplate Url to get list of selected items from during the pre-load phase when url is dynamic
+ *
+ * @property {boolean} allowSelectEvents If select events should be fired
+ *
+ * @property {Function|null} onSelectEvent Callback to trigger when an item is selected
+ * @property {Function|null} onDeselectEvent Callback to trigger when an item is deselected
+ */
 
+export class DatatableSelector extends Datatable {
+    protected selectList: Element | null = null;
     protected itemIdentifier: string = 'uuid';
     protected itemLabel: string = 'uuid';
-
     protected selectedItems:{[key: string]: Item} = {};
 
-    /** @protected {string|null} Url to get list of selected items from */
     protected selectionUrl: string | null = null;
-
-    /** @protected {string|null} Url to get list of selected items from when url is dynamic */
     protected selectionUrlTemplate: string | null = null;
 
-    /** @protected {boolean} If select events should be fired */
     protected allowSelectEvents: boolean = true;
 
-    /** @protected {Function|null} Callback to trigger when an item is selected */
     public onSelectEvent: Function| null = null;
-
-    /** @protected {Function|null} Callback to trigger when an item is deselected */
     public onDeselectEvent: Function| null = null;
 
     /** @inheritDoc */

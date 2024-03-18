@@ -1,99 +1,82 @@
+/**
+ * @property {Element} dataprovider The main element of the data provider
+ * @property {string} dataproviderID The ID of the dataprovider
+ * @property {string} url The data url set by the dataprovider
+ * @property {string} urlTemplate The template url for when dynamicUrl is enabled
+ *
+ * @property {boolean} history Determines if this dataprovider should save it's history
+ * @property {boolean} dynamicUrl Determines if the url's may be changed
+ * @property {boolean} blockLoading If true prevents from loading data
+ * @property {boolean} readonly Whether or not this dataprovider is readonly (has no effects on base)
+ * @property {boolean} showBodyDuringLoad Whether to keep the body visible while loading if a spinner is present.
+ *
+ * @property {Element} body The element content should be placed in
+ * @property {string} emptyBody The text that should be displayed when body is empty
+ * @property {Element|null} spinner The spinner element to be shown when loading
+ *
+ * @property {Element|null} pagination The main pagination element
+ * @property {Element|null} paginationContent The element pagination content should be placed in
+ * @property {HTMLSelectElement|null} perpageSelector The per page selector element
+ * @property {HTMLButtonElement|null} prevBtn The button to be clicked to go 1 page backwards
+ * @property {HTMLButtonElement|null} nextBtn The button to be clicked to go 1 page forwards
+ * @property {string|null} pagecountUrl The url to retrieve the page count from
+ * @property {string|null} pagecountUrlTemplate The templated url to retrieve the page count from when dynamic urls are enabled
+ * @property {number|null} perpage The amount of items per page
+ * @property {number|null} pages The amount of pages
+ * @property {number|null} page The current page
+ * @property {number|null} pagesInPagination The amount of page buttons in the pagination (this amount to the left and right current page in the middle
+ * @property {string|null} pageBtnCls The classes to be added to all pagination elements
+ * @property {string|null} pageNumberedBtnCls The classes to be added to be added to page buttons
+ * @property {string|null} pageBtnDividerCls The classes to be added to the pagination dividers
+ * @property {string|null} pageEmptyBtnCls The classes to be added to the empty page buttons
+ *
+ * @property {Element|null} searchbar The main searchbar element
+ * @property {HTMLInputElement|null} searchbarInput The actual input of the searchbar
+ * @property {HTMLButtonElement|null} searchbarConfirmButton The confirmation button of the searchbar
+ * @property {string|null} searchterm The term to be searched for
+ */
+
 export abstract class DataproviderBase {
-    /** @protected {Element} The main element of the data provider */
+    //| Core properties
     public dataprovider: Element
-
-    /** @protected {string} The ID of the dataprovider */
     protected readonly dataproviderID: string;
-
-    /** @protected {string} The data url set by the dataprovider */
     public url: string;
-
-    /** @protected {string} The template url for when dynamicUrl is enabled */
     public urlTemplate: string;
 
-    /** @protected {boolean} Determines if this dataprovider should save it's history */
+    //| Dataprovider settings
     protected history: boolean = true;
-
-    /** @protected {boolean} Determines if the url's may be changed  */
     protected dynamicUrl: boolean = true;
-
-    /** @protected {boolean} If true prevents from loading data */
     protected blockLoading: boolean = false;
-
-    /** @protected {boolean} Whether or not this dataprovider is readonly (has no effects on base) */
     protected readonly: boolean = false;
-
-    /** @protected {Element} The element content should be placed in */
-    protected body: Element;
-
-    /** @protected {string} The text that should be displayed when body is empty */
-    protected emptyBody = '';
-
-    /** @protected {Element|null} The spinner element to be shown when loading */
-    protected spinner: Element | null = null;
-
-    /** @protected {boolean} Whether to keep the body visible while loading if a spinner is present. */
     protected showBodyDuringLoad: boolean = true;
 
-    // pagination
+    //| Body properties
+    protected body: Element;
+    protected emptyBody = '';
+    protected spinner: Element | null = null;
 
-    /** @protected {Element|null} The main pagination element */
+    //| Pagination properties
     protected pagination: Element | null = null;
-
-    /** @protected {Element|null} The element pagination content should be placed in */
     protected paginationContent: Element | null = null;
-
-    /** @protected {HTMLSelectElement|null} The per page selector element */
     protected perpageSelector: HTMLSelectElement | null = null;
-
-    /** @protected {HTMLButtonElement|null} The button to be clicked to go 1 page backwards */
     protected prevBtn: HTMLButtonElement | null = null;
-
-    /** @protected {HTMLButtonElement|null} The button to be clicked to go 1 page forwards */
     protected nextBtn: HTMLButtonElement | null = null;
-
-    /** @protected {string|null} The classes to be added to all pagination elements */
+    protected pagecountUrl: string | null = null;
+    protected pagecountUrlTemplate: string | null = null;
+    protected perpage: number | null = null;
+    protected pages: number | null = null;
+    protected page: number | null = null;
+    protected pagesInPagination: number = 7;
     protected pageBtnCls: string | null = null;
-
-    /** @protected {string|null} The classes to be added to be added to page buttons */
     protected pageNumberedBtnCls: string | null = null;
-
-    /** @protected {string|null} The classes to be added to the pagination dividers */
     protected pageBtnDividerCls: string | null = null;
-
-    /** @protected {string|null} The classes to be added to the empty page buttons */
     protected pageEmptyBtnCls: string | null = null;
 
-    /** @protected {string|null} The url to retrieve the page count from */
-    protected pagecountUrl: string | null = null;
 
-    /** @protected {string|null} The templated url to retrieve the page count from when dynamic urls are enabled*/
-    protected pagecountUrlTemplate: string | null = null;
-
-    /** @protected {number|null} The amount of items per page */
-    protected perpage: number | null = null;
-
-    /** @protected {number|null} The amount of pages */
-    protected pages: number | null = null;
-
-    /** @protected {number|null} The current page */
-    protected page: number | null = null;
-
-    /** @protected {number|null} The amount of page buttons in the pagination (this amount to the left and right current page in the middle */
-    protected pagesInPagination: number = 7;
-
-    // search
-
-    /** @protected {Element|null} The main searchbar element */
+    //| Search properties
     protected searchbar: Element | null = null;
-
-    /** @protected {HTMLInputElement|null} The actual input of the searchbar */
     protected searchbarInput: HTMLInputElement | null = null;
-
-    /** @protected {HTMLButtonElement|null} The confirmation button of the searchbar */
     protected searchbarConfirmButton: HTMLButtonElement | null = null;
-
-    /** @protected {string|null} The term to be searched for */
     protected searchterm: string | null = null;
 
     public constructor(dataprovider: Element | string) {
@@ -122,7 +105,7 @@ export abstract class DataproviderBase {
     //| Inits
 
     /**
-     * Initializes the dataprovider
+     * Initializes the dataprovider and loads the first set of data
      * @return void
      */
     public async init(): Promise<void> {
@@ -349,10 +332,9 @@ export abstract class DataproviderBase {
 
     /**
      * Fired when the per page selector is triggered, setting the per page value
-     * @param {Event} e The triggering event
      * @return void
      */
-    protected async perPageChangeEvent(e:Event) {
+    protected async perPageChangeEvent() {
         if (this.pagination === null || this.perpageSelector === null) {
             return;
         }

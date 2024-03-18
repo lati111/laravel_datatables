@@ -1,10 +1,18 @@
 import {DataproviderBase} from "./DataproviderBase";
 import {Column} from "./Column";
+/**
+ * @inheritDoc
+ *
+ * @property {Array} columns An associative array containing all the columns
+ * @property {NodeListOf<Element>} sortableHeaders A list of headers that can be sorted on
+ * @property {string|null} sortNeutralImagePath The image used to show that sort mode is neutral on a column. When null no image is shown
+ * @property {string|null} sortDescendingImagePath The image used to show that sort mode is descending on a column. When null no image is shown
+ * @property {string|null} sortAscendingImagePath The image used to show that sort mode is ascending on a column. When null no image is shown
+ */
 
 export class Datatable extends DataproviderBase {
-    protected sortableHeaders:NodeListOf<Element>|null = null;
-
     protected columns:{[key:string]: Column} = {};
+    protected sortableHeaders:NodeListOf<Element>|null = null;
 
     protected sortNeutralImagePath:string|null = null;
     protected sortDescendingImagePath:string|null = null;
@@ -30,6 +38,10 @@ export class Datatable extends DataproviderBase {
         this.sortAscendingImagePath = this.dataprovider.getAttribute('data-sort-img-asc');
     }
 
+    /**
+     * Initializes the columns for the datatable
+     * @return void
+     */
     private initColumns() {
         const headers = this.dataprovider.querySelectorAll('thead th.datatable-header');
 

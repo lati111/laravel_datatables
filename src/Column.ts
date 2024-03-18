@@ -1,24 +1,21 @@
+/**
+ * @property {string} name The column name according to the database
+ * @property {number} index The index of the column when it comes to order in the table
+ * @property {number|null} size The percentage of the row this item should take up
+ * @property {string} cellCls Additional classes for the cell
+ * @property {string} default The default value for a cell if none is set
+ * @property {string|null} format The format for the content cell. [VALUE] will be replaces with the cell value
+ * @property {boolean} visible If the column should be visible or not. True by default
+ */
+
 export class Column {
-    /** @protected {string} The column name according to the database */
-    name:string;
-
-    /** @protected {number} The index of the column when it comes to order in the table */
-    index:number;
-
-    /** @protected {number|null} The percentage of the row this item should take up */
-    size:number|null = null;
-
-    /** @protected {string} Additional classes for the cell */
-    cellCls:string = '';
-
-    /** @protected {string} The default value for a cell if none is set */
-    default:string|null = null;
-
-    /** @protected {string|null} The format for the content cell. [VALUE] will be replaces with the cell value */
-    format:string|null = null;
-
-    /** @protected {boolean|null} If the column should be visible or not */
-    visible:boolean = true;
+    public name:string;
+    public index:number;
+    public size:number|null = null;
+    public cellCls:string = '';
+    public default:string|null = null;
+    public format:string|null = null;
+    public visible:boolean = true;
 
     constructor(name:string, index:number) {
         this.name = name;
