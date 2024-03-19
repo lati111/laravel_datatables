@@ -109,7 +109,7 @@ export class DatatableSelector extends Datatable {
 
     /** @inheritDoc */
     protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
-        super.changeUrls(replacers)
+        await super.changeUrls(replacers)
 
         if (this.selectionUrl !== null) {
             this.selectionUrl = this.changeUrl(this.selectionUrlTemplate!, replacers);

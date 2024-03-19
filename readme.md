@@ -57,7 +57,7 @@ The dataproviders also contain a dynamic filtering system, and support for that 
 
 ### Creating a custom dataprovider script (TS)
 Start creating your own receiver class for a dataprovider, simply create a class extending `DataproviderBase`. Afterwards you must implement it's abstract methods.
-The first being `abstract fetchData(url: string): Promise<any>`, which should retrieve the json data from your dataprovider and convert it into an array filled with associative arrays.
+The first being `abstract fetchData(url: string): Promise<any>` and it's counterpart `abstract [postData(url: string, parameters: FormData): Promise<any>`, which should retrieve the json data from your dataprovider and convert it into an array filled with associative arrays.
 The second method is `abstract addItem(data:Array<any>): void` which should add one of the associative arrays from `fetchData` to your datatable in whatever way you want.
 
 ```ts
@@ -73,6 +73,20 @@ class Datatable extends DataproviderBase {
     
         const data = await response.json();
         return data as Array<Array<any>>;
+    }
+
+    async postData(url: string, parameters: FormData): Promise<any> {
+      const response = await fetch(url, {
+        method: 'post',
+        headers: {
+          'Accept': 'application/json',
+          "Sec-Fetch-Site": "same-origin"
+        },
+        body: parameters
+      });
+  
+      const data = await response.json();
+      return data as Array<Array<any>>;
     }
 
     addItem(data:Array<any>): void {
@@ -480,6 +494,18 @@ The datatable selector class has a number of events that can be used for greater
 
     datatableSelector.onSelectEvent = logSelecting;
 ```
+
+### DatatableForm
+The `DatatableForm` class is a variant of the `Datatable` class that allows for the editing and saving of rows without needing to open a secondary window. This works by adding a save button which saves all the inputs in the row, and by always adding an empty row at the top to add new items through. 
+
+#### Creating a datatable form
+Creating a datatable form is almost identical to creating a regular datatable, as most of the differences are handled inside the class itself. There are however, a few more attributes, both optional and required. 
+- `data-save-url`: The url where the data should be posted to when clicking on the save button. Is required and is compatible with the dynamic option.
+- `data-button-column`: The column id if you have a column you would like to add the save button to, instead of creating a new column for it.
+- `data-empty-row-whitelist`: A whitelist of column that should be filled instead of kept blank. Seperated by `,`. If not set all columns are allowed
+- `data-button-header-cls`: The classes that should be added to the button column header. Only works if `data-button-column` is not set.
+- `data-save-button-cls`: The additional classes that should be added to the save button.
+- `data-save-button-content`: The content on the save button. `<span>Save</span>` by default.
 
 ### Dataselect
 The dataselect dataprovider is a select element that dynamically loads from a dataprovider. Unlike a datatable selector it can only select a single item. While the searchbar for this item is made the same way, it behaves differently. Specifically it serves as the visible part that would normally be the select element itself, and upon closing the option list resets to the newly chosen option, or the last chosen one. The option list also automatically closes when clicking anywhere but the option list. It also has pagination built in, activated on scrolling to the bottom, and thus can use pagination attributes like `data-per-page`.

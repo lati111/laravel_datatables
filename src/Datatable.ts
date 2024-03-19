@@ -177,6 +177,21 @@ export class Datatable extends DataproviderBase {
     }
 
     /** @inheritDoc */
+    async postData(url: string, parameters: FormData): Promise<any> {
+        const response = await fetch(url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                "Sec-Fetch-Site": "same-origin"
+            },
+            body: parameters
+        });
+
+        const data = await response.json();
+        return data as Array<Array<any>>;
+    }
+
+    /** @inheritDoc */
     protected getStorableData():{[key: string]: any} {
         const data = super.getStorableData();
         const sortData = this.getSortData();

@@ -644,6 +644,14 @@ export abstract class DataproviderBase {
     abstract fetchData(url: string): any;
 
     /**
+     * Sends the given parameters to the given request
+     * @param {string} url The url to send data to
+     * @param parameters The parameters to send along
+     * @return {any} Returns the data from the url
+     */
+    abstract postData(url:string, parameters: FormData): any;
+
+    /**
      * Gets an associative array containing the data of the current dataprovider state
      * @return {Object} Returns an associative array with the data
      */
