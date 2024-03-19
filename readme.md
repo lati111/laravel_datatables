@@ -7,19 +7,23 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
   * [Usage](#usage)
     * [Using a dataprovider](#using-a-dataprovider)
       * [Using dynamic urls](#using-dynamic-urls)
+      * [Using filtering](#using-filtering)
     * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
       * [Adding new functions](#adding-new-functions)
     * [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
       * [Creating a searchbar](#creating-a-searchbar)
       * [Creating the pagination](#creating-the-pagination)
+      * [Creating a load indicator](#creating-a-load-indicator)
   * [Templates](#templates)
     * [Datatable](#datatable)
       * [Creating a datatable](#creating-a-datatable)
         * [Creating datatable columns](#creating-datatable-columns)
-  * [Datatable selector](#datatable-selector)
-    * [Creating a datatable selector](#creating-a-datatable-selector)
-    * [Using a datatable selector](#using-a-datatable-selector)
-      * [Events](#events)
+    * [Datatable selector](#datatable-selector)
+      * [Creating a datatable selector](#creating-a-datatable-selector)
+      * [Using a datatable selector](#using-a-datatable-selector)
+        * [Events](#events)
+    * [Dataselect](#dataselect)
+      * [Creating a dataselect](#creating-a-dataselect)
   * [Requirements](#requirements)
 <!-- TOC -->
 
@@ -422,10 +426,10 @@ Furthermore, a column can have a range of optional attributes for futher customi
 </th>
 ```
 
-## Datatable selector
+### Datatable selector
 The `DatatableSelector` is a variant of the `Datatable` class that functions identically for the most part, with a single addition. The `DatatableSelector` is designed to selected multiple entries in the datatable across several pages and pool them in a single result. It does so by adding checkboxes in front of every single entry.
 
-### Creating a datatable selector
+#### Creating a datatable selector
 A `DatatableSelector` is mostly created like it's parent class `Datatable`, with a few minor changes. Specifically the creation of a container to display selected items in, and a few attributes to make the selecting work. On the `Datatable` element add the `datatable-selector` class and fill in the `data-selector-list-ID` attribute with the ID of the select list container.
 
 The select list has the following attributes:
@@ -456,14 +460,14 @@ The select list has the following attributes:
 </div>
 ```
 
-### Using a datatable selector
+#### Using a datatable selector
 After a datatable selector has been intialized, you can get an array of identifiers belonging to each selected item by calling the `getSelectedItems` method.
 
 ```ts
     console.log(datatableSelector.getSelectedItems())
 ```
 
-#### Events
+##### Events
 The datatable selector class has a number of events that can be used for greater flexibility of use. Below follows a list of them, their trigger condition and their given parameters.
 
 - `onSelectEvent`: Triggers when an item is selected. Passes the datatable selector instance and the identifier of the added item.
@@ -475,6 +479,44 @@ The datatable selector class has a number of events that can be used for greater
     }
 
     datatableSelector.onSelectEvent = logSelecting;
+```
+
+### Dataselect
+The dataselect dataprovider is a select element that dynamically loads from a dataprovider. Unlike a datatable selector it can only select a single item. While the searchbar for this item is made the same way, it behaves differently. Specifically it serves as the visible part that would normally be the select element itself, and upon closing the option list resets to the newly chosen option, or the last chosen one. The option list also automatically closes when clicking anywhere but the option list. It also has pagination built in, activated on scrolling to the bottom, and thus can use pagination attributes like `data-per-page`.
+
+#### Creating a dataselect
+A data select does not actually contain a `<select>` element, rather it has a hidden input statement, a body that is shown when the 'select' is opened, and a searchbar. There are also a number of attributes to modify the entire selector further.
+- `data-item-identifier`: The column name that has the identifier for this item, usually id or uuid. Is required.
+- `data-item-label`: The column name that has the displayed name for this item, by default equal to the identifier.
+- `data-expand-button`: The button shown when the option list is closed. When clicked opens the option list. Is required.
+- `data-collapse-button`: The button shown when the option list is open. When clicked closes the option list. Is required.
+- `data-option-cls`: The cls given to any option created by the `generateItem()` method.
+- `data-option-content-cls`: The cls given to any option's content field created by the `generateItem()` method.
+
+```html
+<div>
+  <input
+          id="dataselect1"
+          name="user"
+          type="hidden"
+          ...
+          data-expand-button-id="dataselect1-expand-button"
+          data-collapse-button-id="dataselect1-collapse-button"
+          data-searchbar-ID="dataselect1-searchbar"
+          data-item-identifier="uuid"
+          data-item-label="name"
+          class="dataprovider"
+  />
+
+  <input id="dataselect1-searchbar" class="searchbar" placeholder="Pick a user" autocomplete="off">
+
+  <label class="cursor-pointer outline-none focus:outline-none border-l border-gray-200 transition-all px-1">
+    <button id="dataselect1-expand-button"><img src="img/icons/show-more.svg" alt="show more"></button>
+    <button id="dataselect1-collapse-button"><img src="img/icons/show-less.svg" alt="show less"></button>
+  </label>
+
+  <div id="dataselect1-content"></div>
+</div>
 ```
 
 ## Requirements
