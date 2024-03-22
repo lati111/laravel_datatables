@@ -14,6 +14,7 @@ import {Datatable} from "./Datatable";
 export class DatatableForm extends Datatable {
     protected saveUrl: string = '';
     protected saveUrlTemplate: string = '';
+    public saveHandler: Function|null = null;
 
     protected emptyRowWhiteList: string[] = [];
     protected buttonColumn: string|null = null;
@@ -131,7 +132,15 @@ export class DatatableForm extends Datatable {
                 throw new Error('input missing on input ' + input.outerHTML)
             }
 
-            formdata.set(input.name, input.value ?? '');
+            const column = this.columns[input.name];
+            const value = (column.handler !== null) ? column.handler.get(input) : input.value;
+
+            formdata.set(input.name, value);
+        }
+
+        if (this.saveHandler !== null) {
+            await this.saveHandler(row, this.saveUrl, formdata);
+            return;
         }
 
         await this.postData(this.saveUrl, formdata);

@@ -25,6 +25,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
         * [Events](#events)
     * [DatatableForm](#datatableform)
       * [Creating a datatable form](#creating-a-datatable-form)
+      * [Custom save handler](#custom-save-handler)
     * [Dataselect](#dataselect)
       * [Creating a dataselect](#creating-a-dataselect)
   * [Requirements](#requirements)
@@ -539,6 +540,15 @@ Creating a datatable form is almost identical to creating a regular datatable, a
 - `data-button-header-cls`: The classes that should be added to the button column header. Only works if `data-button-column` is not set.
 - `data-save-button-cls`: The additional classes that should be added to the save button.
 - `data-save-button-content`: The content on the save button. `<span>Save</span>` by default.
+
+#### Custom save handler
+In case the default save method doesn't serve your purposes (such as if you have a different url for creating and editing) you can set the `saveHandler` property to a callback to handle the saving instead. This callback recieves the row element, the url and the collected form data. Below follows an example callback.
+
+```ts
+  async function saveKlantContact(row: HTMLTableRowElement, saveUrl: string, parameters: FormData) {
+      ... do the actual saving
+  }
+```
 
 ### Dataselect
 The dataselect dataprovider is a select element that dynamically loads from a dataprovider. Unlike a datatable selector it can only select a single item. While the searchbar for this item is made the same way, it behaves differently. Specifically it serves as the visible part that would normally be the select element itself, and upon closing the option list resets to the newly chosen option, or the last chosen one. The option list also automatically closes when clicking anywhere but the option list. It also has pagination built in, activated on scrolling to the bottom, and thus can use pagination attributes like `data-per-page`.

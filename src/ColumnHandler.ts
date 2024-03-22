@@ -4,7 +4,7 @@ export class ColumnHandler {
 
     public set(element: Element, value: any): any {
         if (this.setter !== null) {
-            return this.setter(element);
+            return this.setter(element, value);
         }
 
         return (element as HTMLInputElement).value = value;
