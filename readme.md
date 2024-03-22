@@ -18,10 +18,13 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
     * [Datatable](#datatable)
       * [Creating a datatable](#creating-a-datatable)
         * [Creating datatable columns](#creating-datatable-columns)
+        * [Custom handlers for columns](#custom-handlers-for-columns)
     * [Datatable selector](#datatable-selector)
       * [Creating a datatable selector](#creating-a-datatable-selector)
       * [Using a datatable selector](#using-a-datatable-selector)
         * [Events](#events)
+    * [DatatableForm](#datatableform)
+      * [Creating a datatable form](#creating-a-datatable-form)
     * [Dataselect](#dataselect)
       * [Creating a dataselect](#creating-a-dataselect)
   * [Requirements](#requirements)
@@ -438,6 +441,36 @@ Furthermore, a column can have a range of optional attributes for futher customi
         </span>
     </div>
 </th>
+```
+
+##### Custom handlers for columns
+If your column has a non-standard input where the format function doesn't quite cut it, you can use a custom getter or setter instead. A new getter or setter can be set before initialization, using the `setColumnSetter` and `setColumnGetter` methods on the datatable. Below follows a an example of how to implement it.
+
+```ts
+  async function init() {
+    const datatable = new Datatable('user-overview');
+    datatable.setColumnSetter('radio', setRadioInput);
+    datatable.setColumnGetter('radio', getRadioInput);
+    await datatable.init();
+  }
+  
+  // custom setter for a radio button. Marks the radio button with the name contained in value as selected
+  function setRadioInput(element: Element, value: any) {
+    const radioOption = element.querySelector(`input[name="${value}"]`);
+    if (radioOption !== null) {
+        radioOption.checked = true;
+    }
+  }
+
+  // custom getter for a radio button. Gets the currently selected option
+  function getRadioInput(element: Element) {
+    const radioOption = element.querySelector(`input[selected]`);
+    if (radioOption === null) {
+        return null;
+    }
+    
+    return radioOption.name;
+  }
 ```
 
 ### Datatable selector

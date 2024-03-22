@@ -7,6 +7,7 @@
  * @property {string|null} format The format for the content cell. [VALUE] will be replaces with the cell value
  * @property {boolean} visible If the column should be visible or not. True by default
  */
+import {ColumnHandler} from "./ColumnHandler";
 
 export class Column {
     public name:string;
@@ -16,6 +17,7 @@ export class Column {
     public default:string|null = null;
     public format:string|null = null;
     public visible:boolean = true;
+    public handler:ColumnHandler|null = null;
 
     constructor(name:string, index:number) {
         this.name = name;
@@ -45,7 +47,9 @@ export class Column {
             td.style.width = this.size + '% !important'
         }
 
-        if (this.format !== null) {
+        if (this.handler !== null && this.handler.setter !== null) {
+            this.handler.set(td, value);
+        } else if (this.format !== null) {
             td.innerHTML = this.format.replace(/\[value]/gmi, value);
         } else {
             td.innerHTML = value;

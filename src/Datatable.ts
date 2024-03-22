@@ -1,5 +1,6 @@
 import {DataproviderBase} from "./DataproviderBase";
 import {Column} from "./Column";
+import {ColumnHandler} from "./ColumnHandler";
 /**
  * @inheritDoc
  *
@@ -59,7 +60,7 @@ export class Datatable extends DataproviderBase {
             if (size !== null) {
                 column.size = parseInt(size);
             }
-
+            
             this.columns[name] = column;
 
             index++;
@@ -122,6 +123,44 @@ export class Datatable extends DataproviderBase {
         }
 
         header.setAttribute('data-sort-dir', sortdir);
+    }
+
+    /**
+     * Assign a custom setter to a column
+     * @param {string} columnId The column to assign the setter to
+     * @param {Function} setter The setter function to be assigned. The setter have the element and value as it's parameters
+     * @return {HTMLTableRowElement} The created row
+     */
+    public setColumnSetter(columnId: string, setter: Function) {
+        const column = this.columns[columnId];
+        if (column === null) {
+            throw new Error(`Column with id #${columnId} not found`)
+        }
+
+        if (column.handler === null) {
+            column.handler = new ColumnHandler();
+        }
+
+        column.handler.setter = setter;
+    }
+
+    /**
+     * Assign a custom getter to a column
+     * @param {string} columnId The column to assign the getter to
+     * @param {Function} getter The getter function to be assigned. The setter have the element and value as it's parameters
+     * @return {HTMLTableRowElement} The created row
+     */
+    public setColumnGetter(columnId: string, getter: Function) {
+        const column = this.columns[columnId];
+        if (column === null) {
+            throw new Error(`Column with id #${columnId} not found`)
+        }
+
+        if (column.handler === null) {
+            column.handler = new ColumnHandler();
+        }
+
+        column.handler.getter = getter;
     }
 
     /**
