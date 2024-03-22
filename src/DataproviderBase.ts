@@ -100,8 +100,6 @@ export abstract class DataproviderBase {
         this.url = dataUrl;
         this.urlTemplate = dataUrl;
         this.body = this.dataprovider
-
-        this.setup();
     }
 
     //| Inits
@@ -111,6 +109,8 @@ export abstract class DataproviderBase {
      * @return void
      */
     public async init(): Promise<void> {
+        this.setup();
+
         if (this.history === true) {
             await this.loadFromUrlStorage();
             window.addEventListener("popstate", this.loadFromUrlStorage.bind(this));

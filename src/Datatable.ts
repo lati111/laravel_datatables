@@ -5,6 +5,7 @@ import {ColumnHandler} from "./ColumnHandler";
  * @inheritDoc
  *
  * @property {Array} columns An associative array containing all the columns
+ * @property {Array} columnHandlers An associative array containing all the custom column handlers before adding them to the columns
  * @property {NodeListOf<Element>} sortableHeaders A list of headers that can be sorted on
  * @property {string|null} sortNeutralImagePath The image used to show that sort mode is neutral on a column. When null no image is shown
  * @property {string|null} sortDescendingImagePath The image used to show that sort mode is descending on a column. When null no image is shown
@@ -13,6 +14,7 @@ import {ColumnHandler} from "./ColumnHandler";
 
 export class Datatable extends DataproviderBase {
     protected columns:{[key:string]: Column} = {};
+    protected columnHandlers:{[key:string]: ColumnHandler} = {};
     protected sortableHeaders:NodeListOf<Element>|null = null;
 
     protected sortNeutralImagePath:string|null = null;
@@ -60,7 +62,11 @@ export class Datatable extends DataproviderBase {
             if (size !== null) {
                 column.size = parseInt(size);
             }
-            
+
+            if (this.columnHandlers[name] !== null) {
+                column.handler = this.columnHandlers[name];
+            }
+
             this.columns[name] = column;
 
             index++;
@@ -132,16 +138,11 @@ export class Datatable extends DataproviderBase {
      * @return {HTMLTableRowElement} The created row
      */
     public setColumnSetter(columnId: string, setter: Function) {
-        const column = this.columns[columnId];
-        if (column === null) {
-            throw new Error(`Column with id #${columnId} not found`)
+        if (this.columnHandlers[columnId] === null) {
+            this.columnHandlers[columnId]  = new ColumnHandler();
         }
 
-        if (column.handler === null) {
-            column.handler = new ColumnHandler();
-        }
-
-        column.handler.setter = setter;
+        this.columnHandlers[columnId] .setter = setter;
     }
 
     /**
@@ -151,16 +152,11 @@ export class Datatable extends DataproviderBase {
      * @return {HTMLTableRowElement} The created row
      */
     public setColumnGetter(columnId: string, getter: Function) {
-        const column = this.columns[columnId];
-        if (column === null) {
-            throw new Error(`Column with id #${columnId} not found`)
+        if (this.columnHandlers[columnId] === null) {
+            this.columnHandlers[columnId] = new ColumnHandler();
         }
 
-        if (column.handler === null) {
-            column.handler = new ColumnHandler();
-        }
-
-        column.handler.getter = getter;
+        this.columnHandlers[columnId].getter = getter;
     }
 
     /**
