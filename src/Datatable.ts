@@ -63,7 +63,7 @@ export class Datatable extends DataproviderBase {
                 column.size = parseInt(size);
             }
 
-            if (this.columnHandlers[name] !== null) {
+            if (this.columnHandlers[name] !== undefined) {
                 column.handler = this.columnHandlers[name];
             }
 
@@ -138,7 +138,7 @@ export class Datatable extends DataproviderBase {
      * @return {HTMLTableRowElement} The created row
      */
     public setColumnSetter(columnId: string, setter: Function) {
-        if (this.columnHandlers[columnId] === null) {
+        if (this.columnHandlers[columnId] === undefined) {
             this.columnHandlers[columnId]  = new ColumnHandler();
         }
 
@@ -152,7 +152,7 @@ export class Datatable extends DataproviderBase {
      * @return {HTMLTableRowElement} The created row
      */
     public setColumnGetter(columnId: string, getter: Function) {
-        if (this.columnHandlers[columnId] === null) {
+        if (this.columnHandlers[columnId] === undefined) {
             this.columnHandlers[columnId] = new ColumnHandler();
         }
 

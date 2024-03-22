@@ -47,7 +47,11 @@ export class Column {
             td.style.width = this.size + '% !important'
         }
 
-        if (this.handler !== null && this.handler.setter !== null) {
+        if (typeof this.handler?.setter === 'function') {
+            if (this.format !== null) {
+                td.innerHTML = this.format;
+            }
+
             this.handler.set(td, value);
         } else if (this.format !== null) {
             td.innerHTML = this.format.replace(/\[value]/gmi, value);
