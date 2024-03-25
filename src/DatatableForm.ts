@@ -74,11 +74,16 @@ export class DatatableForm extends Datatable {
         await super.load(shouldResetPagination);
 
         this.body.prepend(this.generateEmptyRow())
+
+        if (this.readonly) {
+            this.enableReadonlyMode();
+        }
     }
 
     /** Generated an unfilled row for the table */
     protected generateEmptyRow() {
         let row = document.createElement('tr');
+        row.classList.add('new-row');
 
         let key: keyof typeof this.columns;
         for (key in this.columns) {
@@ -118,6 +123,7 @@ export class DatatableForm extends Datatable {
 
         const button = document.createElement('button');
         button.classList.value = this.saveButtonCls;
+        button.classList.add('datatableform-save-btn')
         button.innerHTML = this.saveButtonContent;
         button.addEventListener('click', this.saveRow.bind(this, row));
         cell.prepend(button)
@@ -151,17 +157,37 @@ export class DatatableForm extends Datatable {
 
     /** Sets all inputs, selects and textareas on this datalist to readonly */
     public enableReadonlyMode() {
-        if (this.readonly === true) {
-            return
-        }
-
         const items = this.body.querySelectorAll('.datatableform-input input, .datatableform-input select, .datatableform-input textarea');
         for (let i = 0; i < items.length; i++) {
             const item = items[i] as HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement;
-            if (item.hasAttribute('readony') === false) {
+            if (item.type === 'checkbox' || item.type === 'radio') {
+                if (!item.hasAttribute('disabled')) {
+                    item.setAttribute('disabled', 'disabled');
+                    item.classList.add('datalist-readonly');
+                }
+
+                continue
+            }
+
+            if (!item.hasAttribute('readony')) {
                 item.setAttribute('readonly', 'readonly');
                 item.classList.add('datalist-readonly');
             }
+        }
+
+        const saveBtns = this.body.querySelectorAll('button.datatableform-save-btn');
+        for (let i = 0; i < saveBtns.length; i++) {
+            const saveBtn = saveBtns[i] as HTMLButtonElement;
+            if (!saveBtn.classList.contains('hidden')) {
+                saveBtn.classList.add('datalist-readonly');
+                saveBtn.classList.add('hidden');
+            }
+        }
+
+        const newRow = this.body.querySelector('tr.new-row');
+        if (newRow !== null) {
+            newRow.classList.add('datalist-readonly');
+            newRow.classList.add('hidden');
         }
 
         this.readonly = true;
@@ -169,13 +195,25 @@ export class DatatableForm extends Datatable {
 
     /** Removes readonly from all inputs, selects and textareas on this datalist */
     public disableReadonlyMode() {
-        if (this.readonly === false) {
+        if (!this.readonly) {
             return
         }
 
         const items = this.body.querySelectorAll('.datalist-readonly');
         for (let i = 0; i < items.length; i++) {
-            const item = items[i] as HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement;
+            const item = items[i] as HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|HTMLButtonElement;
+            item.classList.remove('datalist-readonly')
+
+            if (item.classList.contains('datatableform-save-btn') || item.classList.contains('new-row')) {
+                item.classList.remove('hidden');
+                continue;
+            }
+
+            if (item.type === 'checkbox' || item.type === 'radio') {
+                item.removeAttribute('disabled');
+                continue
+            }
+
             item.removeAttribute('readonly');
         }
 
