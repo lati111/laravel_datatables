@@ -80,6 +80,11 @@ export class DatatableForm extends Datatable {
         }
     }
 
+    /** Adds a new empty row to the body */
+    public addEmptyRow(): void {
+        this.body.prepend(this.generateEmptyRow())
+    }
+
     /** Generated an unfilled row for the table */
     protected generateEmptyRow() {
         let row = document.createElement('tr');
