@@ -26,6 +26,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
     * [DatatableForm](#datatableform)
       * [Creating a datatable form](#creating-a-datatable-form)
       * [Custom save handler](#custom-save-handler)
+      * [Setting the table to readonly](#setting-the-table-to-readonly)
     * [Dataselect](#dataselect)
       * [Creating a dataselect](#creating-a-dataselect)
   * [Requirements](#requirements)
@@ -549,6 +550,10 @@ In case the default save method doesn't serve your purposes (such as if you have
       ... do the actual saving
   }
 ```
+
+
+#### Setting the table to readonly
+The datatable form template also comes with a built in readonly switch. When enabled or disabled through `enableReadonlyMode()` or `disableReadonlyMode()` all inputs created through the format option, and all inputs inside of a `<td>` with the `datatableform-input` class will be set to readonly. When disabling this mode all the elements set to readonly will be returned to that normal state. Note that if they were readonly before this mode was toggled on, they will still be readonly after it has been disabled.
 
 ### Dataselect
 The dataselect dataprovider is a select element that dynamically loads from a dataprovider. Unlike a datatable selector it can only select a single item. While the searchbar for this item is made the same way, it behaves differently. Specifically it serves as the visible part that would normally be the select element itself, and upon closing the option list resets to the newly chosen option, or the last chosen one. The option list also automatically closes when clicking anywhere but the option list. It also has pagination built in, activated on scrolling to the bottom, and thus can use pagination attributes like `data-per-page`.

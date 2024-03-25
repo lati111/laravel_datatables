@@ -31,6 +31,7 @@ export class Column {
     public createCell(value:string|null): HTMLTableCellElement {
         const td = document.createElement('td');
         td.classList.value = this.cellCls;
+        td.classList.add('datatableform-input');
         if (!this.visible) {
             td.classList.add('hidden');
         }

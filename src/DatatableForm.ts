@@ -22,6 +22,9 @@ export class DatatableForm extends Datatable {
     protected saveButtonContent: string = '<span>Save</span>';
     protected saveButtonCls: string = '';
 
+    /** @type {boolean} Whether or not the inputs on this form should be set to readonly */
+    protected readonly: boolean = false;
+
     /** @inheritDoc */
     protected setup(): void {
         super.setup();
@@ -144,5 +147,38 @@ export class DatatableForm extends Datatable {
         }
 
         await this.postData(this.saveUrl, formdata);
+    }
+
+    /** Sets all inputs, selects and textareas on this datalist to readonly */
+    public enableReadonlyMode() {
+        if (this.readonly === true) {
+            return
+        }
+
+        const items = this.body.querySelectorAll('.datatableform-input input, .datatableform-input select, .datatableform-input textarea');
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i] as HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement;
+            if (item.hasAttribute('readony') === false) {
+                item.setAttribute('readonly', 'readonly');
+                item.classList.add('datalist-readonly');
+            }
+        }
+
+        this.readonly = true;
+    }
+
+    /** Removes readonly from all inputs, selects and textareas on this datalist */
+    public disableReadonlyMode() {
+        if (this.readonly === false) {
+            return
+        }
+
+        const items = this.body.querySelectorAll('.datalist-readonly');
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i] as HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement;
+            item.removeAttribute('readonly');
+        }
+
+        this.readonly = false;
     }
 }
