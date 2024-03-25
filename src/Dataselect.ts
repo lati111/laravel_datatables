@@ -124,11 +124,27 @@ export class DataSelect extends DataproviderBase {
     /**
      * Triggered when an item is selected
      * @param {Element} item The selected item
+     * @param {Event} event The click event
      * @return void
      */
-    protected selectEvent(item: Element) {
+    protected selectEvent(item: Element, event: Event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
         this.currentLabel = item.textContent ?? this.currentLabel;
         this.currentIdentifier = item.getAttribute('data-value') ?? this.currentIdentifier;
+
+        this.collapseEvent();
+    }
+
+    /**
+     * Prevent click events being fire before click is complete
+     * @param {Event} event The click event
+     * @return void
+     */
+    protected preventMousedownEvent(event: Event) {
+        event.preventDefault();
     }
 
     /**
@@ -197,7 +213,8 @@ export class DataSelect extends DataproviderBase {
         content.textContent = data[this.itemLabel]
         item.append(content);
 
-        item.addEventListener('mousedown', this.selectEvent.bind(this, content))
+        item.addEventListener('mousedown', this.preventMousedownEvent.bind(this))
+        item.addEventListener('click', this.selectEvent.bind(this, content))
 
         return item;
     }
