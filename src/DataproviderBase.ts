@@ -3,6 +3,7 @@
  * @property {string} dataproviderID The ID of the dataprovider
  * @property {string} url The data url set by the dataprovider
  * @property {string} urlTemplate The template url for when dynamicUrl is enabled
+ * @property {boolean} loading Whether this dataprovider is currently loading
  *
  * @property {boolean} history Determines if this dataprovider should save it's history
  * @property {boolean} dynamicUrl Determines if the url's may be changed
@@ -42,6 +43,7 @@ export abstract class DataproviderBase {
     protected readonly dataproviderID: string;
     public url: string;
     public urlTemplate: string;
+    protected loading: boolean = false;
 
     //| Dataprovider settings
     protected history: boolean = true;
@@ -73,7 +75,6 @@ export abstract class DataproviderBase {
     protected pageNumberedBtnCls: string | null = null;
     protected pageBtnDividerCls: string | null = null;
     protected pageEmptyBtnCls: string | null = null;
-
 
     //| Search properties
     protected searchbar: Element | null = null;
@@ -276,13 +277,11 @@ export abstract class DataproviderBase {
         const loadFunc = this.searchbarEvent.bind(this);
 
         //confirm button init
-        const searchBtnID = searchbarElement.getAttribute('data-confirm-button-ID')
-        if (searchBtnID !== undefined) {
-            const searchBtnElement = document.querySelector('#'+searchBtnID) as HTMLButtonElement|null;
-            if (searchBtnElement !== null) {
-                searchBtnElement.addEventListener('click', loadFunc)
-                this.searchbarConfirmButton = searchBtnElement
-            }
+        const searchBtnID = searchbarElement.getAttribute('data-confirm-button-ID') ?? this.dataproviderID + '-search-confirm-button'
+        const searchBtnElement = document.querySelector('#'+searchBtnID) as HTMLButtonElement|null;
+        if (searchBtnElement !== null) {
+            searchBtnElement.addEventListener('click', loadFunc)
+            this.searchbarConfirmButton = searchBtnElement
         }
 
         //input init
@@ -368,13 +367,13 @@ export abstract class DataproviderBase {
      * @return void
      */
     protected async searchbarEvent(e:Event) {
-        if (e instanceof  KeyboardEvent) {
+        if (e instanceof KeyboardEvent) {
             if (e.key !== "Enter") {
                 return;
             }
         }
 
-        if (this.searchbarInput === null) {
+        if (this.searchbarInput === null || this.loading) {
             return;
         }
 
@@ -583,9 +582,11 @@ export abstract class DataproviderBase {
      * @return void
      */
     public async load(shouldResetPagination: boolean = false, keepContents: boolean = false) {
-        if (this.blockLoading) {
+        if (this.blockLoading || this.loading) {
             return;
         }
+
+        this.loading = true;
 
         // show the spinner if it is enabled
         if (this.spinner !== null) {
@@ -651,6 +652,8 @@ export abstract class DataproviderBase {
             currentUrl.searchParams.set(this.dataproviderID, JSON.stringify(this.getStorableData()))
             window.history.pushState({urlPath:currentUrl.toString()}, '', currentUrl.toString());
         }
+
+        this.loading = false;
     }
 
     /**
