@@ -291,6 +291,7 @@ Furthermore, a number of optional attributes can be set for additional customiza
 - `data-spinner-ID`: The ID of the spinner that should be shown while loading. If left empty, no spinner will be used
 - `data-pagination-ID`: The ID of your pagination element. If left empty, `[dataproviderID]-pagination` will be used for the ID.
 - `data-searchbar-ID`: The ID of your searchbar element. If left empty, `[dataproviderID]-searchbar` will be used for the ID.
+- `data-disable-container-ID`: The ID of the container that should be disabled when loading. If left empty, `[dataproviderID]-disable-container` will be used for the ID.
 - `data-empty-body`: A HTML string that should be inserted into the body if the amount of records in the dataprovider is 0, empty by default.
 - `data-history`: Whether or not to track the dataprovider's history or not. True by default.
 

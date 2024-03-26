@@ -54,6 +54,8 @@ export abstract class DataproviderBase {
     protected body: Element;
     protected emptyBody = '';
     protected spinner: Element | null = null;
+    /** @type {Element|null} The container to disable on load. When not set nothing will be disabled*/
+    protected disableContainer: Element | null = null;
 
     //| Pagination properties
     protected pagination: Element | null = null;
@@ -154,6 +156,9 @@ export abstract class DataproviderBase {
             throw new Error('Could not find content on dataprovider with ID ' + contentID);
         }
         this.body = contentElement;
+
+        let disableContainerId = this.dataprovider.getAttribute('data-disable-container-ID') ?? this.dataproviderID + '-disable-container';
+        this.disableContainer = document.querySelector('#' + disableContainerId)
     }
 
     /**
@@ -587,6 +592,12 @@ export abstract class DataproviderBase {
             this.spinner.classList.remove('hidden');
         }
 
+        // disable the container if on exists
+        if (this.disableContainer !== null) {
+            this.disableContainer.setAttribute('disabled', 'disabled');
+        }
+
+        // hide the body if needed
         if (!this.showBodyDuringLoad) {
             this.body.classList.add('hidden');
         }
@@ -621,8 +632,14 @@ export abstract class DataproviderBase {
             this.spinner.classList.add('hidden');
         }
 
+        // show the body again if it was hidden
         if (!this.showBodyDuringLoad) {
             this.body.classList.remove('hidden');
+        }
+
+        // enable the container if it exists
+        if (this.disableContainer !== null) {
+            this.disableContainer.removeAttribute('disabled');
         }
 
         // refill the pagination
