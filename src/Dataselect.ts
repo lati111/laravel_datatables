@@ -21,7 +21,10 @@ export class DataSelect extends DataproviderBase {
     protected itemIdentifier: string = 'uuid';
     protected itemLabel: string = 'uuid';
 
-    protected currentLabel: string = 'Kies een optie...';
+    /** @type {string} The default label that is shown when no option is selected */
+    protected defaultLabel: string = '...';
+
+    protected currentLabel: string = '';
     protected currentIdentifier: string = '';
 
     protected optionCls:string = '';
@@ -63,6 +66,10 @@ export class DataSelect extends DataproviderBase {
         } else {
             this.itemLabel = this.itemIdentifier
         }
+
+        this.defaultLabel = this.dataprovider.getAttribute('data-default-label') ?? '...';
+        const searchbar = this.searchbar as HTMLInputElement;
+        searchbar.value = this.defaultLabel;
 
         //set default hiding position
         this.body.classList.add('hidden');
@@ -193,10 +200,20 @@ export class DataSelect extends DataproviderBase {
         this.body.append(this.generateItem(data));
     }
 
+    /** Gets the currently selection item's value */
     public getSelectedItem(): string {
         const dataselect = this.dataprovider as HTMLInputElement;
         return dataselect.value;
     }
+
+    /** Resets the currently selected value to the default */
+    public reset(): void {
+        const searchbar = this.searchbar as HTMLInputElement;
+        searchbar.value = this.defaultLabel;
+        const dataprovider = this.dataprovider as HTMLInputElement;
+        dataprovider.value = '';
+    }
+
 
     /**
      * Creates a row to insert into the table

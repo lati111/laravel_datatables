@@ -475,7 +475,7 @@ export abstract class DataproviderBase {
      * @param {boolean} current If this is the currently opened page. False by default
      * @return {HTMLButtonElement} Returns the generated element
      */
-    private createPaginationNode(text:string, page:number, current:boolean = false): HTMLButtonElement {
+    protected createPaginationNode(text:string, page:number, current:boolean = false): HTMLButtonElement {
         const element = document.createElement('button');
         element.classList.value = this.pageBtnCls + ' ' + this.pageNumberedBtnCls;
         element.setAttribute('data-value', page.toString());
@@ -492,7 +492,7 @@ export abstract class DataproviderBase {
      * Generated the divider seperating the first/last page from the range of pages near the current page
      * @return {HTMLSpanElement} Returns the generated element
      */
-    private createPaginationDivider():HTMLSpanElement {
+    protected createPaginationDivider():HTMLSpanElement {
         const element = document.createElement('span');
         element.classList.value = this.pageBtnCls + ' ' + this.pageBtnDividerCls;
         element.textContent = '...';
@@ -503,7 +503,7 @@ export abstract class DataproviderBase {
      * Generates a placeholder element to use when a page does not exist on that location to maintain spacing
      * @return {HTMLButtonElement} Returns the generated element
      */
-    private createEmptyPaginationNode():HTMLButtonElement {
+    protected createEmptyPaginationNode():HTMLButtonElement {
         const element = document.createElement('button');
         element.classList.value = this.pageBtnCls + ' ' + this.pageEmptyBtnCls;
         return element;

@@ -565,6 +565,7 @@ A data select does not actually contain a `<select>` element, rather it has a hi
 - `data-item-label`: The column name that has the displayed name for this item, by default equal to the identifier.
 - `data-expand-button`: The button shown when the option list is closed. When clicked opens the option list. Is required.
 - `data-collapse-button`: The button shown when the option list is open. When clicked closes the option list. Is required.
+- `data-default-label`: The default string to display when no item is selected. Normally `...`.
 - `data-option-cls`: The cls given to any option created by the `generateItem()` method.
 - `data-option-content-cls`: The cls given to any option's content field created by the `generateItem()` method.
 
