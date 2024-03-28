@@ -137,7 +137,7 @@ export class Datatable extends DataproviderBase {
      * @param {Function} setter The setter function to be assigned. The setter have the element and value as it's parameters
      * @return {HTMLTableRowElement} The created row
      */
-    public setColumnSetter(columnId: string, setter: Function) {
+    public setColumnSetter(columnId: string, setter: Function): void {
         if (this.columnHandlers[columnId] === undefined) {
             this.columnHandlers[columnId]  = new ColumnHandler();
         }
@@ -151,7 +151,7 @@ export class Datatable extends DataproviderBase {
      * @param {Function} getter The getter function to be assigned. The setter have the element and value as it's parameters
      * @return {HTMLTableRowElement} The created row
      */
-    public setColumnGetter(columnId: string, getter: Function) {
+    public setColumnGetter(columnId: string, getter: Function): void {
         if (this.columnHandlers[columnId] === undefined) {
             this.columnHandlers[columnId] = new ColumnHandler();
         }
@@ -259,16 +259,7 @@ export class Datatable extends DataproviderBase {
     }
 
     /** @inheritDoc */
-    addItem(data:{[key:string]:any}): void {
-        this.body.append(this.generateRow(data));
-    }
-
-    /**
-     * Creates a row to insert into the table
-     * @param {Array} data Associative array to convert into a row
-     * @return {HTMLTableRowElement} The created row
-     */
-    protected generateRow(data:{[key:string]:any}): HTMLTableRowElement {
+    protected createItem(data:{[key:string]:any}): HTMLElement {
         const row = document.createElement('tr');
         const rowData:{[key: number]:HTMLTableCellElement} = {};
 
@@ -282,7 +273,7 @@ export class Datatable extends DataproviderBase {
 
         const length = Object.keys(this.columns).length;
         for (let i = 0; i < length; i++) {
-            if (i in rowData === false) {
+            if (!(i in rowData)) {
                 //find column if no value was set
                 let key: keyof typeof this.columns;
                 for (key in this.columns) {

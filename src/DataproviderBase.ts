@@ -56,8 +56,18 @@ export abstract class DataproviderBase {
     protected body: Element;
     protected emptyBody = '';
     protected spinner: Element | null = null;
-    /** @type {Element|null} The container to disable on load. When not set nothing will be disabled*/
+    /** @type {Element|null} The container to disable on load. When not set nothing will be disabled */
     protected disableContainer: Element | null = null;
+
+    //| Data item properties
+    /** @type {string|null} The key of the value in the data used to identify an item. When null all items are treated as generic */
+    protected itemIdentifierKey: string|null = null;
+    /** @type {string|null} The key of the value in the data used to display the item. When null the identifier is used as the label */
+    protected itemLabelKey: string|null = null;
+    /** @type {string} The identifier used for a new item that has not yet received a true id */
+    protected newItemIdentifier: string = 'new_data_item';
+    /** @type {Array} An associative array mimicking the format of the actual data given. This is used instead of normal parameters in creating a new item */
+    public newItemData:{[key:string]: any} = {};
 
     //| Pagination properties
     protected pagination: Element | null = null;
@@ -127,15 +137,16 @@ export abstract class DataproviderBase {
      * @return void
      */
     protected setup(): void {
-        this.initBody()
-        this.initSpinner()
+        this.initBody();
+        this.initItemParameters();
+        this.initSpinner();
 
         if (this.dataprovider.getAttribute('data-dynamic-url') === 'true') {
             this.dynamicUrl = true;
             this.blockLoading = true;
         }
 
-        this.initPagination()
+        this.initPagination();
         this.initSearchbar();
         this.initFilters();
     }
@@ -160,6 +171,16 @@ export abstract class DataproviderBase {
 
         let disableContainerId = this.dataprovider.getAttribute('data-disable-container-ID') ?? this.dataproviderID + '-disable-container';
         this.disableContainer = document.querySelector('#' + disableContainerId)
+    }
+
+    /**
+     * Initialize the data item parameters
+     * @return void
+     */
+    protected initItemParameters() {
+        this.itemIdentifierKey = this.dataprovider.getAttribute('data-identifier-key');
+        this.itemLabelKey = this.dataprovider.getAttribute('data-label-key') ?? this.itemIdentifierKey;
+        this.newItemIdentifier = this.dataprovider.getAttribute('data-new-item-identifier') ?? 'new_data_item';
     }
 
     /**
@@ -762,11 +783,41 @@ export abstract class DataproviderBase {
     //| DOM manipulation
 
     /**
+     * Creates an new item and adds it to the body
+     */
+    public addNewItem(): void {
+        const data = this.newItemData;
+        if (this.itemIdentifierKey !== null) {
+            data[this.itemIdentifierKey] = this.newItemIdentifier;
+        }
+
+        const item = this.createNewItem(data)
+        this.body.prepend(item)
+    }
+
+    /**
+     * Creates a new item;
+     */
+    protected createNewItem(data:{[key:string]:any}): HTMLElement {
+        return this.createItem(data);
+    }
+
+    /**
      * Adds an item to the dataprovider's body
      * @param {Array} data Associative array to add
      * @return void
      */
-    abstract addItem(data:{[key:string]:any}): void;
+    protected addItem(data:{[key:string]:any}): void {
+        const item = this.createItem(data);
+        this.body.append(item);
+    }
+
+    /**
+     * Creates a new item to be added to the body
+     * @param {Array} data Associative array to add
+     * @return {HTMLElement} The created item
+     */
+    protected abstract createItem(data:{[key:string]:any}): HTMLElement;
 
     /**
      * Check all filter elements and combine the results into an array

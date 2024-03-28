@@ -5,9 +5,6 @@ import {DataproviderBase} from "../../DataproviderBase";
  *
  * @protected {number} searchTimer The number of milliseconds until a search should be attempted
  *
- * @property {string} itemIdentifier The identifier of an item. Used as the value, 'uuid' by default
- * @property {string} itemLabel The label of an item. Used as the display text, equal to itemIdentifier by default
- *
  * @property {string} currentLabel The label that is currently shown
  * @property {string} currentIdentifier The identifier of the item that is currently shown
  */
@@ -18,12 +15,8 @@ export class DataSelect extends DataproviderBase {
 
     protected searchTimer: number = 0;
 
-    protected itemIdentifier: string = 'uuid';
-    protected itemLabel: string = 'uuid';
-
     /** @type {string} The default label that is shown when no option is selected */
     protected defaultLabel: string = '...';
-
     protected currentLabel: string = '';
     protected currentIdentifier: string = '';
 
@@ -53,18 +46,9 @@ export class DataSelect extends DataproviderBase {
 
         this.collapseButton.addEventListener('click', this.collapseEvent.bind(this));
 
-        //set item identifier
-        const identifier = this.dataprovider.getAttribute('data-item-identifier');
-        if (identifier !== null) {
-            this.itemIdentifier = identifier;
-        }
-
-        //set item label
-        const label = this.dataprovider.getAttribute('data-item-label');
-        if (label !== null) {
-            this.itemLabel = label;
-        } else {
-            this.itemLabel = this.itemIdentifier
+        //check identifiers
+        if (this.itemIdentifierKey === null) {
+            throw new Error('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"')
         }
 
         this.defaultLabel = this.dataprovider.getAttribute('data-default-label') ?? '...';
@@ -195,11 +179,6 @@ export class DataSelect extends DataproviderBase {
         }
     }
 
-    /** @inheritDoc */
-    addItem(data: { [key: string]: any }): void {
-        this.body.append(this.generateItem(data));
-    }
-
     /** Gets the currently selection item's value */
     public getSelectedItem(): string {
         const dataselect = this.dataprovider as HTMLInputElement;
@@ -220,14 +199,14 @@ export class DataSelect extends DataproviderBase {
      * @param {Array} data Associative array to convert into a row
      * @return {HTMLTableRowElement} The created row
      */
-    protected generateItem(data: { [key: string]: any }): HTMLElement {
+    protected createItem(data: { [key: string]: any }): HTMLElement {
         const item = document.createElement('div');
         item.classList.value = this.optionCls;
 
         const content = document.createElement('a');
         content.classList.value = this.optionContentCls;
-        content.setAttribute('data-value', data[this.itemIdentifier])
-        content.textContent = data[this.itemLabel]
+        content.setAttribute('data-value', data[this.itemIdentifierKey!])
+        content.textContent = data[this.itemLabelKey!]
         item.append(content);
 
         item.addEventListener('mousedown', this.preventMousedownEvent.bind(this))

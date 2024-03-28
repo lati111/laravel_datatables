@@ -7,6 +7,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
   * [Usage](#usage)
     * [Using a dataprovider](#using-a-dataprovider)
       * [Using dynamic urls](#using-dynamic-urls)
+      * [Adding new (empty) items to the datalist](#adding-new-empty-items-to-the-datalist)
       * [Using filtering](#using-filtering)
     * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
       * [Adding new functions](#adding-new-functions)
@@ -53,6 +54,12 @@ Dataproviders are by default capable of swapping out the url at will, in case yo
 
 In this example, the url `https://site.test/users/[user_id]/data` would become `https://site.test/users/42/data`
 
+#### Adding new (empty) items to the datalist
+Each datalist by default supports the adding of new, empty items in case that is something you want. Examples of usecases like this is adding an empty row in the datatable form, or a fillable card in a cardlist. 
+To add a new row to your item, you simply need to call the `addNewItem()` method on your dataprovider and it should be automatically added, creating it's item through `createNewItem()`.
+If you would like to add defaults for certain fields, you can do so by passing an associative array to the `newItemData` property, in the same format as your data would be during loading. 
+If the `data-identifier-key` property is set, the value of the `data-new-item-identifier` attribute will be used in place of the identifier. By default the value of `data-new-item-identifier` is `new_data_item`. 
+
 #### Using filtering
 The dataproviders also contain a dynamic filtering system, and support for that has been built into the receivers as well. You may add your own filters by implementing them through `getFilters()`. By default the option for filter checkboxes is also built in. If a checkbox has the `{dataproviderID}-filter-checkbox` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
 - `data-checked-operator`: The operator to pass to the filter when this element is checked, as declared in the filter.
@@ -63,7 +70,7 @@ The dataproviders also contain a dynamic filtering system, and support for that 
 ### Creating a custom dataprovider script (TS)
 Start creating your own receiver class for a dataprovider, simply create a class extending `DataproviderBase`. Afterwards you must implement it's abstract methods.
 The first being `abstract fetchData(url: string): Promise<any>` and it's counterpart `abstract [postData(url: string, parameters: FormData): Promise<any>`, which should retrieve the json data from your dataprovider and convert it into an array filled with associative arrays.
-The second method is `abstract addItem(data:Array<any>): void` which should add one of the associative arrays from `fetchData` to your datatable in whatever way you want.
+The second method is `protected createItem(data:Array<any>): void` which should add one of the associative arrays from `fetchData` to your datatable in whatever way you want.
 
 ```ts
 class Datatable extends DataproviderBase {
@@ -484,15 +491,14 @@ A `DatatableSelector` is mostly created like it's parent class `Datatable`, with
 
 The select list has the following attributes:
 - `data-selection-url`: The url which to preload selected items from. When unset does not preload items.
-- `data-item-identifier`: The column name that has the identifier for this item, usually id or uuid. Is required.
-- `data-item-label`: The column name that has the displayed name for this item, by default equal to the identifier.
+- `data-identifier-key`: The column name that has the identifier for this item, usually id or uuid. Is required.
+- `data-label-key`: The column name that has the displayed name for this item, by default equal to the identifier.
 - `data-checkbox-header-cls`: Additional classes for the checkbox header.
 - `data-item-cls`: Additional classes to be added to the display element.
 - `data-item-label-cls`: Additional classes to be added to the display element's label.
 - `data-item-close-button-cls`: Additional classes to be added to the display element's close button.
 - `data-item-close-button-content`: What is displayed inside the close button. Normally `<span>X</span>`.
 - `data-readonly`: Whether this selector is readonly or not. False by default.
-
 
 ```html
 <div class="flex flex-col justify-center align-items max-w-xl gap-4">

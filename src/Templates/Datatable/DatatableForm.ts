@@ -73,21 +73,16 @@ export class DatatableForm extends Datatable {
     public async load(shouldResetPagination: boolean = false) {
         await super.load(shouldResetPagination);
 
-        this.body.prepend(this.generateEmptyRow())
+        this.addNewItem();
 
         if (this.readonly) {
             this.enableReadonlyMode();
         }
     }
 
-    /** Adds a new empty row to the body */
-    public addEmptyRow(): void {
-        this.body.prepend(this.generateEmptyRow())
-    }
-
     /** Generated an unfilled row for the table */
-    protected generateEmptyRow() {
-        let row = document.createElement('tr');
+    protected createNewItem(data:{[key:string]:any}): HTMLElement {
+        let row = document.createElement('tr') as HTMLElement;
         row.classList.add('new-row');
 
         let key: keyof typeof this.columns;
@@ -103,7 +98,7 @@ export class DatatableForm extends Datatable {
                 continue;
             }
 
-            row.append(column.createCell(null));
+            row.append(column.createCell(data[key] ?? null));
         }
 
         row = this.addSaveButton(row);
@@ -111,19 +106,21 @@ export class DatatableForm extends Datatable {
     }
 
     /** @inheritDoc */
-    protected generateRow(data:{[key:string]:any}): HTMLTableRowElement {
-        const row = super.generateRow(data);
-        return this.addSaveButton(row);
+    protected createItem(data:{[key:string]:any}): HTMLElement {
+        let row = super.createItem(data);
+        row = this.addSaveButton(row);
+
+        return row;
     }
 
     /** Adds the save button to the button column */
-    protected addSaveButton(row:HTMLTableRowElement) {
-        let cell = document.createElement('td');
+    protected addSaveButton(row:HTMLElement): HTMLElement {
+        let buttonCell = document.createElement('td');
         if (this.buttonColumn !== null) {
             const column = this.columns[this.buttonColumn];
-            cell = row.children[column.index] as HTMLTableCellElement
+            buttonCell = row.children[column.index] as HTMLTableCellElement
         } else {
-            row.append(cell)
+            row.append(buttonCell)
         }
 
         const button = document.createElement('button');
@@ -131,13 +128,13 @@ export class DatatableForm extends Datatable {
         button.classList.add('datatableform-save-btn')
         button.innerHTML = this.saveButtonContent;
         button.addEventListener('click', this.saveRow.bind(this, row));
-        cell.prepend(button)
+        buttonCell.prepend(button)
 
         return row;
     }
 
     /** Saves a row's data through an API call */
-    protected async saveRow(row:HTMLTableRowElement) {
+    protected async saveRow(row:HTMLElement) {
         const formdata = new FormData();
         const inputs = row.querySelectorAll('td input.data-input, textarea.data-input, td select.data-input')
         for (let i = 0; i < inputs.length; i++) {

@@ -4,8 +4,6 @@ import {Datatable} from "./Datatable";
  * @inheritDoc
  *
  * @property {Element|null} selectList List where selected items should be displayed
- * @property {string} itemIdentifier The identifier of an item. Used as the value, 'uuid' by default
- * @property {string} itemLabel The label of an item. Used as the display text, equal to itemIdentifier by default
  * @property {Array} selectedItems An associative array containing all the selected items
  *
  * @property {string|null} selectionUrl Url to get list of selected items from during the pre-load phase
@@ -48,20 +46,6 @@ export class DatatableSelector extends Datatable {
 
         this.selectList = selectListElement;
 
-        //set item identifier
-        const identifier = selectListElement.getAttribute('data-item-identifier');
-        if (identifier !== null) {
-            this.itemIdentifier = identifier;
-        }
-
-        //set item label
-        const label = selectListElement.getAttribute('data-item-label');
-        if (label !== null) {
-            this.itemLabel = label;
-        } else {
-            this.itemLabel = this.itemIdentifier
-        }
-
         //create checkbox header
         const th = document.createElement('th');
         th.classList.value = selectListElement.getAttribute('data-checkbox-header-cls') ?? '';
@@ -73,6 +57,11 @@ export class DatatableSelector extends Datatable {
 
         //set readonly
         this.readonly = (this.selectList?.getAttribute('data-readonly') === 'true') ?? false;
+
+        //check identifiers
+        if (this.itemIdentifierKey === null) {
+            throw new Error('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"')
+        }
     }
 
     /** @inheritDoc */
@@ -100,7 +89,7 @@ export class DatatableSelector extends Datatable {
         let key: keyof typeof data;
         for (key in data) {
             const dataItem = data[key];
-            const item = new Item(dataItem[this.itemIdentifier], dataItem[this.itemLabel]);
+            const item = new Item(dataItem[this.itemIdentifierKey!], dataItem[this.itemLabelKey!]);
             this.selectItemEvent(item);
         }
 
@@ -119,16 +108,16 @@ export class DatatableSelector extends Datatable {
     }
 
     /** @inheritDoc */
-    protected generateRow(data:{[key:string]:any}): HTMLTableRowElement {
-        const row = super.generateRow(data);
+    protected createItem(data:{[key:string]:any}): HTMLElement {
+        const row = super.createItem(data);
         const td = document.createElement('td');
 
         const checkbox = document.createElement('input');
-        checkbox.setAttribute('data-id', data[this.itemIdentifier]);
+        checkbox.setAttribute('data-id', data[this.itemIdentifierKey!]);
         checkbox.type = 'checkbox';
 
-        const item = new Item(data[this.itemIdentifier], data[this.itemLabel!])
-        if (data[this.itemIdentifier] in this.selectedItems) {
+        const item = new Item(data[this.itemIdentifierKey!], data[this.itemLabelKey!])
+        if (data[this.itemIdentifierKey!] in this.selectedItems) {
             checkbox.checked = true;
         }
 
