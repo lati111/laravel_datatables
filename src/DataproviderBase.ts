@@ -194,7 +194,7 @@ export abstract class DataproviderBase {
     protected initItemParameters() {
         this.itemIdentifierKey = this.dataprovider.getAttribute('data-identifier-key');
         this.itemLabelKey = this.dataprovider.getAttribute('data-label-key') ?? this.itemIdentifierKey;
-        this.itemLabelKey = this.dataprovider.getAttribute('data-activity-key');
+        this.itemActivityKey = this.dataprovider.getAttribute('data-activity-key');
         this.newItemIdentifier = this.dataprovider.getAttribute('data-new-item-identifier') ?? 'new_data_item';
     }
 
@@ -427,9 +427,9 @@ export abstract class DataproviderBase {
         }
 
         if (element.checked) {
-            this.applyReadonlyMode(dataItem);
-        } else {
             this.removeReadonlyMode(dataItem);
+        } else {
+            this.applyReadonlyMode(dataItem);
         }
     }
 
@@ -932,8 +932,8 @@ export abstract class DataproviderBase {
         } else {
             dataItem.classList.remove('data-item-inactive');
             readonlyClass = 'data-item-individual-readonly';
-            if (eventless === false && this.onItemDisableEvent !== null) {
-                this.onItemDisableEvent(this, dataItem);
+            if (eventless === false && this.onItemEnableEvent !== null) {
+                this.onItemEnableEvent(this, dataItem);
             }
         }
 
@@ -1014,7 +1014,7 @@ export abstract class DataproviderBase {
      * @private
      */
     private unmarkItemAsReadonly(item: Element): Element {
-        if (item.classList.contains('data-item-readonly') === false) {
+        if (item.classList.contains('data-item-readonly') || item.classList.contains('data-item-individual-readonly')) {
             return item;
         }
 
@@ -1030,7 +1030,7 @@ export abstract class DataproviderBase {
      * @private
      */
     private unmarkItemAsDisabled(item: Element): Element {
-        if (item.classList.contains('data-item-readonly') === false) {
+        if (item.classList.contains('data-item-readonly') || item.classList.contains('data-item-individual-readonly')) {
             return item;
         }
 
@@ -1057,7 +1057,7 @@ export abstract class DataproviderBase {
             item.classList.add('hidden');
         }
 
-        this.body.append(this.addItemEvents(item, data));
+        this.body.prepend(this.addItemEvents(item, data));
     }
 
     /**

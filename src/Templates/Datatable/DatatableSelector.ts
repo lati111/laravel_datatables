@@ -18,8 +18,6 @@ import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionEr
 
 export class DatatableSelector extends Datatable {
     protected selectList: Element | null = null;
-    protected itemIdentifier: string = 'uuid';
-    protected itemLabel: string = 'uuid';
     protected selectedItems:{[key: string]: Item} = {};
 
     protected selectionUrl: string | null = null;

@@ -1,6 +1,6 @@
 {
   "name": "@lati111/laravel_datatables",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A typescript library to create datatables based off the lati111/laravel_dataproviders composer package",
   "main": "index.js",
   "scripts": {
