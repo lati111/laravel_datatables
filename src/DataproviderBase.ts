@@ -64,6 +64,8 @@ export abstract class DataproviderBase {
     protected itemIdentifierKey: string|null = null;
     /** @type {string|null} The key of the value in the data used to display the item. When null the identifier is used as the label */
     protected itemLabelKey: string|null = null;
+    /** @type {string|null} The key of the value in the data used to decide whether an item is active or not */
+    protected itemActivityKey: string|null = null;
     /** @type {string} The identifier used for a new item that has not yet received a true id */
     protected newItemIdentifier: string = 'new_data_item';
     /** @type {Array} An associative array mimicking the format of the actual data given. This is used instead of normal parameters in creating a new item */
@@ -91,6 +93,12 @@ export abstract class DataproviderBase {
     protected searchbarInput: HTMLInputElement | null = null;
     protected searchbarConfirmButton: HTMLButtonElement | null = null;
     protected searchterm: string | null = null;
+
+    //| Event callbacks
+    /** @type {Function|null} An event triggered when an inactive item is set as active. Passes the dataprovider and the item as parameters. */
+    public onItemEnableEvent: Function|null = null;
+    /** @type {Function|null} An event triggered when an actuve item is toggled as inactive. Passes the dataprovider and the item as parameters. */
+    public onItemDisableEvent: Function|null = null;
 
     public constructor(dataprovider: Element | string) {
         if (typeof dataprovider === 'string') {
@@ -180,6 +188,7 @@ export abstract class DataproviderBase {
     protected initItemParameters() {
         this.itemIdentifierKey = this.dataprovider.getAttribute('data-identifier-key');
         this.itemLabelKey = this.dataprovider.getAttribute('data-label-key') ?? this.itemIdentifierKey;
+        this.itemLabelKey = this.dataprovider.getAttribute('data-activity-key');
         this.newItemIdentifier = this.dataprovider.getAttribute('data-new-item-identifier') ?? 'new_data_item';
     }
 
@@ -400,6 +409,23 @@ export abstract class DataproviderBase {
 
         this.searchterm = this.searchbarInput.value;
         await this.load(true);
+    }
+
+    /**
+     * An event that toggles the activity of an item in the datalist based on the passed checkbox. Triggered by a checkbox that uses the itemActivityKey as it's name.
+     * @return void
+     */
+    protected toggleItemActivityEvent(element:HTMLInputElement) {
+        const dataItem = element.closest('.data-item');
+        if (dataItem === null) {
+            throw new Error('Data item not found on activity toggle');
+        }
+
+        if (element.checked) {
+            this.applyReadonlyMode(dataItem);
+        } else {
+            this.removeReadonlyMode(dataItem);
+        }
     }
 
     //| Setup
@@ -837,12 +863,23 @@ export abstract class DataproviderBase {
      * It also marks all elements with the 'data-item-readonly-sensitive' as readonly, or disabled depending on the type.
      * This ignores elements already marked as readonly. New readonly elements have the class 'data-item-readonly'.
      * Lastly if the element also has the 'hidden-when-readonly' class, it is hidden.
+     * @param {Element|null} dataItem The specific item to mark as readonly, instead of the whole datalist
+     * @param {boolean} eventless Whether to skip event callbacks or not
      */
-    protected applyReadonlyMode(): void {
-        const container = this.disableContainer ?? this.dataprovider;
-        container.classList.add('datalist-readonly');
+    protected applyReadonlyMode(dataItem: Element|null = null, eventless: boolean = false): void {
+        let readonlyClass = 'data-item-readonly'
+        if (dataItem === null) {
+            dataItem = this.disableContainer ?? this.dataprovider;
+            dataItem.classList.add('datalist-readonly');
+        } else {
+            dataItem.classList.add('data-item-inactive');
+            readonlyClass = 'data-item-individual-readonly';
+            if (eventless === false && this.onItemDisableEvent !== null) {
+                this.onItemDisableEvent(this, dataItem);
+            }
+        }
 
-        const readonlySensitiveItems = container.querySelectorAll('.data-item-readonly-sensitive');
+        const readonlySensitiveItems = dataItem.querySelectorAll('.data-item-readonly-sensitive');
         for (let i = 0; i < readonlySensitiveItems.length; i++) {
             const item = readonlySensitiveItems[i] as HTMLElement;
             switch (item.tagName) {
@@ -869,6 +906,7 @@ export abstract class DataproviderBase {
                     break;
             }
 
+            item.classList.add(readonlyClass)
             if (item.classList.contains('hidden-when-readonly')) {
                 item.classList.add('hidden');
             }
@@ -876,16 +914,32 @@ export abstract class DataproviderBase {
     }
 
     /**
-     * Undoes the effects from the 'applyReadonlyMode' method
+     * Undoes the effects from the 'applyReadonlyMode' method. Does not undo the effects if it is still marked as readonly by the other kind of switch.
+     * @param {Element|null} dataItem The specific item to mark as readonly, instead of the whole datalist
+     * @param {boolean} eventless Whether to skip event callbacks or not
      * @protected
      */
-    protected removeReadonlyMode(): void {
-        const container = this.disableContainer ?? this.dataprovider;
-        container.classList.remove('datalist-readonly');
+    protected removeReadonlyMode(dataItem: Element|null = null, eventless: boolean = false): void {
+        let readonlyClass = 'data-item-readonly'
+        if (dataItem === null) {
+            dataItem = this.disableContainer ?? this.dataprovider;
+            dataItem.classList.remove('datalist-readonly');
+        } else {
+            dataItem.classList.remove('data-item-inactive');
+            readonlyClass = 'data-item-individual-readonly';
+            if (eventless === false && this.onItemDisableEvent !== null) {
+                this.onItemDisableEvent(this, dataItem);
+            }
+        }
 
-        const readonlyItems = container.querySelectorAll('.data-item-readonly-sensitive.data-item-readonly');
+        const readonlyItems = dataItem.querySelectorAll('.data-item-readonly-sensitive.'+readonlyClass);
         for (let i = 0; i < readonlyItems.length; i++) {
             const item = readonlyItems[i] as HTMLElement;
+            item.classList.remove(readonlyClass)
+            if (item.classList.contains('data-item-readonly') || item.classList.contains('data-item-individual-readonly')) {
+                continue;
+            }
+
             switch (item.tagName) {
                 case 'INPUT':
                     const input = item as HTMLInputElement;
@@ -928,7 +982,6 @@ export abstract class DataproviderBase {
         }
 
         item.setAttribute('readonly', 'readonly');
-        item.classList.add('data-item-readonly');
 
         return item;
     }
@@ -945,7 +998,6 @@ export abstract class DataproviderBase {
         }
 
         item.setAttribute('disabled', 'disabled');
-        item.classList.add('data-item-readonly');
 
         return item;
     }
@@ -962,7 +1014,6 @@ export abstract class DataproviderBase {
         }
 
         item.removeAttribute('readonly');
-        item.classList.remove('data-item-readonly');
 
         return item;
     }
@@ -979,7 +1030,6 @@ export abstract class DataproviderBase {
         }
 
         item.removeAttribute('disabled');
-        item.classList.remove('data-item-readonly');
 
         return item;
     }
@@ -1002,7 +1052,7 @@ export abstract class DataproviderBase {
             item.classList.add('hidden');
         }
 
-        this.body.prepend(item)
+        this.body.append(this.addItemEvents(item, data));
     }
 
     /**
@@ -1019,7 +1069,8 @@ export abstract class DataproviderBase {
      */
     protected addItem(data:{[key:string]:any}): void {
         const item = this.createItem(data);
-        this.body.append(item);
+
+        this.body.append(this.addItemEvents(item, data));
     }
 
     /**
@@ -1028,4 +1079,26 @@ export abstract class DataproviderBase {
      * @return {HTMLElement} The created item
      */
     protected abstract createItem(data:{[key:string]:any}): HTMLElement;
+
+    /**
+     * Adds events to an item where applicable
+     * @param {Element} item The item to apply events to
+     * @param {Array} data Associative array with data for this item
+     * @return {Element} The item with events applied
+     * @protected
+     */
+    protected addItemEvents(item: HTMLElement, data:{[key:string]:any}): HTMLElement {
+        if (this.itemActivityKey !== null) {
+            const activityCheckbox = item.querySelector(`[type="checkbox"][name="${this.itemActivityKey}"]`) as HTMLInputElement|null
+            if (activityCheckbox !== null) {
+                activityCheckbox.addEventListener('change', this.toggleItemActivityEvent.bind(this, activityCheckbox));
+            }
+        }
+
+        if (this.itemActivityKey !== null && data[this.itemActivityKey] == false) {
+            this.applyReadonlyMode(item, true);
+        }
+
+        return item;
+    }
 }
