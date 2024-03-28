@@ -1,6 +1,6 @@
-import {DataproviderBase} from "./DataproviderBase";
-import {Column} from "./Column";
-import {ColumnHandler} from "./ColumnHandler";
+import {DataproviderBase} from "../../DataproviderBase";
+import {Column} from "./Data/Column";
+import {ColumnHandler} from "./Data/ColumnHandler";
 /**
  * @inheritDoc
  *

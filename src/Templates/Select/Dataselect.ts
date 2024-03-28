@@ -1,4 +1,4 @@
-import {DataproviderBase} from "./DataproviderBase";
+import {DataproviderBase} from "../../DataproviderBase";
 
 /** @protected {Element|null} expandButton The button responsible for expanding the body
  * @protected {Element|null} collapseButton The button responsible for collapsing the body
