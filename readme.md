@@ -8,6 +8,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
     * [Using a dataprovider](#using-a-dataprovider)
       * [Using dynamic urls](#using-dynamic-urls)
       * [Adding new (empty) items to the datalist](#adding-new-empty-items-to-the-datalist)
+      * [Using readonly mode](#using-readonly-mode)
       * [Using filtering](#using-filtering)
     * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
       * [Adding new functions](#adding-new-functions)
@@ -27,7 +28,6 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
     * [DatatableForm](#datatableform)
       * [Creating a datatable form](#creating-a-datatable-form)
       * [Custom save handler](#custom-save-handler)
-      * [Setting the table to readonly](#setting-the-table-to-readonly)
     * [Dataselect](#dataselect)
       * [Creating a dataselect](#creating-a-dataselect)
   * [Requirements](#requirements)
@@ -59,6 +59,13 @@ Each datalist by default supports the adding of new, empty items in case that is
 To add a new row to your item, you simply need to call the `addNewItem()` method on your dataprovider and it should be automatically added, creating it's item through `createNewItem()`.
 If you would like to add defaults for certain fields, you can do so by passing an associative array to the `newItemData` property, in the same format as your data would be during loading. 
 If the `data-identifier-key` property is set, the value of the `data-new-item-identifier` attribute will be used in place of the identifier. By default the value of `data-new-item-identifier` is `new_data_item`. 
+
+#### Using readonly mode
+The dataprovider comes built in with a readonly switch. This can be enabled or disabled through the `enableReadonlyMode()` or `disableReadonlyMode()` methods. 
+When in readonly mode the dataprovider will get the class 'datalist-readonly', all elements with the 'data-item-readonly-sensitive' class will be set to readonly or disabled depending on the element type.
+Elements that also have the 'hidden-when-readonly' class will also be hidden from the user as long as this mode is enabled. 
+When disabling this mode all the elements set to readonly will be returned to that normal state. 
+Note that if they were readonly before this mode was toggled on, they will still be readonly after it has been disabled.
 
 #### Using filtering
 The dataproviders also contain a dynamic filtering system, and support for that has been built into the receivers as well. You may add your own filters by implementing them through `getFilters()`. By default the option for filter checkboxes is also built in. If a checkbox has the `{dataproviderID}-filter-checkbox` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
@@ -557,10 +564,6 @@ In case the default save method doesn't serve your purposes (such as if you have
       ... do the actual saving
   }
 ```
-
-
-#### Setting the table to readonly
-The datatable form template also comes with a built in readonly switch. When enabled or disabled through `enableReadonlyMode()` or `disableReadonlyMode()` all inputs created through the format option, and all inputs inside of a `<td>` with the `datatableform-input` class will be set to readonly. When disabling this mode all the elements set to readonly will be returned to that normal state. Note that if they were readonly before this mode was toggled on, they will still be readonly after it has been disabled.
 
 ### Dataselect
 The dataselect dataprovider is a select element that dynamically loads from a dataprovider. Unlike a datatable selector it can only select a single item. While the searchbar for this item is made the same way, it behaves differently. Specifically it serves as the visible part that would normally be the select element itself, and upon closing the option list resets to the newly chosen option, or the last chosen one. The option list also automatically closes when clicking anywhere but the option list. It also has pagination built in, activated on scrolling to the bottom, and thus can use pagination attributes like `data-per-page`.

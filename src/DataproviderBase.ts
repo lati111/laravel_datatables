@@ -8,7 +8,6 @@
  * @property {boolean} history Determines if this dataprovider should save it's history
  * @property {boolean} dynamicUrl Determines if the url's may be changed
  * @property {boolean} blockLoading If true prevents from loading data
- * @property {boolean} readonly Whether or not this dataprovider is readonly (has no effects on base)
  * @property {boolean} showBodyDuringLoad Whether to keep the body visible while loading if a spinner is present.
  *
  * @property {Element} body The element content should be placed in
@@ -49,8 +48,9 @@ export abstract class DataproviderBase {
     protected history: boolean = true;
     protected dynamicUrl: boolean = true;
     protected blockLoading: boolean = false;
-    protected readonly: boolean = false;
     protected showBodyDuringLoad: boolean = true;
+    /** @type {boolean} Whether or not this dataprovider is readonly */
+    protected readonly: boolean = false;
 
     //| Body properties
     protected body: Element;
@@ -675,6 +675,11 @@ export abstract class DataproviderBase {
         }
 
         this.loading = false;
+
+        // remarks as readonly if needed
+        if (this.readonly) {
+            this.applyReadonlyMode();
+        }
     }
 
     /**
@@ -783,43 +788,6 @@ export abstract class DataproviderBase {
     //| DOM manipulation
 
     /**
-     * Creates an new item and adds it to the body
-     */
-    public addNewItem(): void {
-        const data = this.newItemData;
-        if (this.itemIdentifierKey !== null) {
-            data[this.itemIdentifierKey] = this.newItemIdentifier;
-        }
-
-        const item = this.createNewItem(data)
-        this.body.prepend(item)
-    }
-
-    /**
-     * Creates a new item;
-     */
-    protected createNewItem(data:{[key:string]:any}): HTMLElement {
-        return this.createItem(data);
-    }
-
-    /**
-     * Adds an item to the dataprovider's body
-     * @param {Array} data Associative array to add
-     * @return void
-     */
-    protected addItem(data:{[key:string]:any}): void {
-        const item = this.createItem(data);
-        this.body.append(item);
-    }
-
-    /**
-     * Creates a new item to be added to the body
-     * @param {Array} data Associative array to add
-     * @return {HTMLElement} The created item
-     */
-    protected abstract createItem(data:{[key:string]:any}): HTMLElement;
-
-    /**
      * Check all filter elements and combine the results into an array
      * @return void
      */
@@ -847,4 +815,217 @@ export abstract class DataproviderBase {
 
         return filters;
     }
+
+    /**
+     * Sets the datalist to readonly mode. This adds the 'datalist-readonly' class to the datalist, and marks all elements with the 'data-item-readonly-sensitive' not already marked as readonly as readonly, or disabled depending on the type.
+     */
+    public enableReadonlyMode(): void {
+        this.readonly = true;
+        this.applyReadonlyMode();
+    }
+
+    /**
+     * Removes the effects of readonly mode.
+     */
+    public disableReadonlyMode(): void {
+        this.readonly = false;
+        this.removeReadonlyMode();
+    }
+
+    /**
+     * Applies the readonly properties to the dataprovider. This adds the 'datalist-readonly' class to the datalist.
+     * It also marks all elements with the 'data-item-readonly-sensitive' as readonly, or disabled depending on the type.
+     * This ignores elements already marked as readonly. New readonly elements have the class 'data-item-readonly'.
+     * Lastly if the element also has the 'hidden-when-readonly' class, it is hidden.
+     */
+    protected applyReadonlyMode(): void {
+        const container = this.disableContainer ?? this.dataprovider;
+        container.classList.add('datalist-readonly');
+
+        const readonlySensitiveItems = container.querySelectorAll('.data-item-readonly-sensitive');
+        for (let i = 0; i < readonlySensitiveItems.length; i++) {
+            const item = readonlySensitiveItems[i] as HTMLElement;
+            switch (item.tagName) {
+                case 'INPUT':
+                    const input = item as HTMLInputElement;
+                    switch (input.type) {
+                        case 'radio':
+                        case 'checkbox':
+                            this.markItemAsDisabled(item);
+                            break;
+                        default:
+                            this.markItemAsReadonly(item);
+                    }
+
+                    break;
+                case 'TEXTAREA':
+                    this.markItemAsReadonly(item);
+                    break;
+                default:
+                case 'A':
+                case 'BUTTON':
+                case 'SELECT':
+                    this.markItemAsDisabled(item);
+                    break;
+            }
+
+            if (item.classList.contains('hidden-when-readonly')) {
+                item.classList.add('hidden');
+            }
+        }
+    }
+
+    /**
+     * Undoes the effects from the 'applyReadonlyMode' method
+     * @protected
+     */
+    protected removeReadonlyMode(): void {
+        const container = this.disableContainer ?? this.dataprovider;
+        container.classList.remove('datalist-readonly');
+
+        const readonlyItems = container.querySelectorAll('.data-item-readonly-sensitive.data-item-readonly');
+        for (let i = 0; i < readonlyItems.length; i++) {
+            const item = readonlyItems[i] as HTMLElement;
+            switch (item.tagName) {
+                case 'INPUT':
+                    const input = item as HTMLInputElement;
+                    switch (input.type) {
+                        case 'radio':
+                        case 'checkbox':
+                            this.unmarkItemAsDisabled(item);
+                            break;
+                        default:
+                            this.unmarkItemAsReadonly(item);
+                    }
+
+                    break;
+                case 'TEXTAREA':
+                    this.unmarkItemAsReadonly(item);
+                    break;
+                default:
+                case 'A':
+                case 'BUTTON':
+                case 'SELECT':
+                    this.unmarkItemAsDisabled(item);
+                    break;
+            }
+
+            if (item.classList.contains('hidden-when-readonly')) {
+                item.classList.remove('hidden');
+            }
+        }
+    }
+
+    /**
+     * Mark an item as readonly, if it isn't already readonly
+     * @param {Element} item The item to marked as readonly
+     * @return {Element} the newly marked element
+     * @private
+     */
+    private markItemAsReadonly(item: Element): Element {
+        if (item.hasAttribute('readony') === true) {
+            return item;
+        }
+
+        item.setAttribute('readonly', 'readonly');
+        item.classList.add('data-item-readonly');
+
+        return item;
+    }
+
+    /**
+     * Mark an item as disabled, if it isn't already disabled
+     * @param {Element} item The item to marked as disabled
+     * @return {Element} the newly marked element
+     * @private
+     */
+    private markItemAsDisabled(item: Element): Element {
+        if (item.hasAttribute('disabled') === true) {
+            return item;
+        }
+
+        item.setAttribute('disabled', 'disabled');
+        item.classList.add('data-item-readonly');
+
+        return item;
+    }
+
+    /**
+     * Removed readonly from an item, if it wasn't already readonly nefore
+     * @param {Element} item The item to be unmarked
+     * @return {Element} the unmarked element
+     * @private
+     */
+    private unmarkItemAsReadonly(item: Element): Element {
+        if (item.classList.contains('data-item-readonly') === false) {
+            return item;
+        }
+
+        item.removeAttribute('readonly');
+        item.classList.remove('data-item-readonly');
+
+        return item;
+    }
+
+    /**
+     * Removed disabled from an item, if it wasn't already disabled nefore
+     * @param {Element} item The item to be unmarked
+     * @return {Element} the unmarked element
+     * @private
+     */
+    private unmarkItemAsDisabled(item: Element): Element {
+        if (item.classList.contains('data-item-readonly') === false) {
+            return item;
+        }
+
+        item.removeAttribute('disabled');
+        item.classList.remove('data-item-readonly');
+
+        return item;
+    }
+
+    //| Item manipulation
+
+    /**
+     * Creates an new item and adds it to the body
+     */
+    public addNewItem(): void {
+        const data = this.newItemData;
+        if (this.itemIdentifierKey !== null) {
+            data[this.itemIdentifierKey] = this.newItemIdentifier;
+        }
+
+        const item = this.createNewItem(data)
+        item.classList.add('data-item-readonly-sensitive');
+        item.classList.add('hidden-when-readonly');
+        if (this.readonly) {
+            item.classList.add('hidden');
+        }
+
+        this.body.prepend(item)
+    }
+
+    /**
+     * Creates a new item;
+     */
+    protected createNewItem(data:{[key:string]:any}): HTMLElement {
+        return this.createItem(data);
+    }
+
+    /**
+     * Adds an item to the dataprovider's body
+     * @param {Array} data Associative array to add
+     * @return void
+     */
+    protected addItem(data:{[key:string]:any}): void {
+        const item = this.createItem(data);
+        this.body.append(item);
+    }
+
+    /**
+     * Creates a new item to be added to the body
+     * @param {Array} data Associative array to add
+     * @return {HTMLElement} The created item
+     */
+    protected abstract createItem(data:{[key:string]:any}): HTMLElement;
 }

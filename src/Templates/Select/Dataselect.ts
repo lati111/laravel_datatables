@@ -193,7 +193,6 @@ export class DataSelect extends AbstractDataproviderTemplate {
         dataprovider.value = '';
     }
 
-
     /**
      * Creates a row to insert into the table
      * @param {Array} data Associative array to convert into a row
