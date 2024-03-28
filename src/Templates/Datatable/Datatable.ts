@@ -1,6 +1,6 @@
-import {DataproviderBase} from "../../DataproviderBase";
 import {Column} from "./Data/Column";
 import {ColumnHandler} from "./Data/ColumnHandler";
+import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
 /**
  * @inheritDoc
  *
@@ -12,7 +12,7 @@ import {ColumnHandler} from "./Data/ColumnHandler";
  * @property {string|null} sortAscendingImagePath The image used to show that sort mode is ascending on a column. When null no image is shown
  */
 
-export class Datatable extends DataproviderBase {
+export class Datatable extends AbstractDataproviderTemplate {
     protected columns:{[key:string]: Column} = {};
     protected columnHandlers:{[key:string]: ColumnHandler} = {};
     protected sortableHeaders:NodeListOf<Element>|null = null;
@@ -195,35 +195,6 @@ export class Datatable extends DataproviderBase {
         }
 
         return url;
-    }
-
-    /** @inheritDoc */
-    async fetchData(url: string): Promise<any> {
-        const response = await fetch(url, {
-            method: 'get',
-            headers: {
-                'Accept': 'application/json',
-                "Sec-Fetch-Site": "same-origin"
-            }
-        });
-
-        const data = await response.json();
-        return data as Array<Array<any>>;
-    }
-
-    /** @inheritDoc */
-    async postData(url: string, parameters: FormData): Promise<any> {
-        const response = await fetch(url, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                "Sec-Fetch-Site": "same-origin"
-            },
-            body: parameters
-        });
-
-        const data = await response.json();
-        return data as Array<Array<any>>;
     }
 
     /** @inheritDoc */

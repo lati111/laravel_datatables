@@ -1,4 +1,4 @@
-import {DataproviderBase} from "../../DataproviderBase";
+import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
 
 /** @protected {Element|null} expandButton The button responsible for expanding the body
  * @protected {Element|null} collapseButton The button responsible for collapsing the body
@@ -9,7 +9,7 @@ import {DataproviderBase} from "../../DataproviderBase";
  * @property {string} currentIdentifier The identifier of the item that is currently shown
  */
 
-export class DataSelect extends DataproviderBase {
+export class DataSelect extends AbstractDataproviderTemplate {
     protected expandButton: Element | null = null;
     protected collapseButton: Element | null = null;
 
@@ -221,34 +221,5 @@ export class DataSelect extends DataproviderBase {
         url.searchParams.set('offset', "" + this.body.children.length);
 
         return url;
-    }
-
-    /** @inheritDoc */
-    async fetchData(url: string): Promise<any> {
-        const response = await fetch(url, {
-            method: 'get',
-            headers: {
-                'Accept': 'application/json',
-                "Sec-Fetch-Site": "same-origin"
-            }
-        });
-
-        const data = await response.json();
-        return data as Array<Array<any>>;
-    }
-
-    /** @inheritDoc */
-    async postData(url: string, parameters: FormData): Promise<any> {
-        const response = await fetch(url, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                "Sec-Fetch-Site": "same-origin"
-            },
-            body: parameters
-        });
-
-        const data = await response.json();
-        return data as Array<Array<any>>;
     }
 }
