@@ -9,6 +9,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
       * [Using dynamic urls](#using-dynamic-urls)
       * [Adding new (empty) items to the datalist](#adding-new-empty-items-to-the-datalist)
       * [Using readonly mode](#using-readonly-mode)
+      * [Using activity toggles](#using-activity-toggles)
       * [Using filtering](#using-filtering)
     * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
       * [Adding new functions](#adding-new-functions)
@@ -28,6 +29,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
     * [DatatableForm](#datatableform)
       * [Creating a datatable form](#creating-a-datatable-form)
       * [Custom save handler](#custom-save-handler)
+    * [DataCardList](#datacardlist)
     * [Dataselect](#dataselect)
       * [Creating a dataselect](#creating-a-dataselect)
   * [Requirements](#requirements)
@@ -66,6 +68,11 @@ When in readonly mode the dataprovider will get the class 'datalist-readonly', a
 Elements that also have the 'hidden-when-readonly' class will also be hidden from the user as long as this mode is enabled. 
 When disabling this mode all the elements set to readonly will be returned to that normal state. 
 Note that if they were readonly before this mode was toggled on, they will still be readonly after it has been disabled.
+
+#### Using activity toggles
+Sometimes you may want to toggle the activity of an item individually, disabling it if it is no longer active. You can do so by assigning an activity boolean in your data through the `data-activity-key`. When an item is loaded where the given boolean in false in the data, the it is marked as readonly on an individual basis, instead of as a whole. 
+This state can also be easily toggled by assigning the activity key as a name to a checkbox, upon which it will toggle when clicked. 
+Toggling the activity state in this way triggers the `onItemEnableEvent` and `onItemDisableEvent` event callbacks, if any are given. These callbacks return the dataprovider instance and the specific item that was toggled.
 
 #### Using filtering
 The dataproviders also contain a dynamic filtering system, and support for that has been built into the receivers as well. You may add your own filters by implementing them through `getFilters()`. By default the option for filter checkboxes is also built in. If a checkbox has the `{dataproviderID}-filter-checkbox` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
@@ -563,6 +570,27 @@ In case the default save method doesn't serve your purposes (such as if you have
   async function saveKlantContact(row: HTMLTableRowElement, saveUrl: string, parameters: FormData) {
       ... do the actual saving
   }
+```
+
+### DataCardList
+The data card list is mostly used as a visual display element, containing a list of copies from a specificied template element with the data filled in. The cardlist requires the `data-card-template` attribute containing the id of the template element to be copied.
+To fill in data into the template, an `<input>`, `<select>`, `<textarea>` or a `<span>` element must be present with it's name, or the `data-name` attribute set to the key of the value it should contain. Below follows an example.
+
+```html
+  <div class="flex flex-col justify-center align-items max-w-xl gap-4">
+    <div id="cardlist1" class="dataprovider cardlist"
+         ...
+         data-card-template="cardlist1-template">
+    </div>
+    
+    <div class="hidden">
+      <div id="cardlist1-template">
+        <h4><span data-name="title"></span></h4>
+        <textarea name="description"></textarea>
+        <input type="checkbox" name="active">
+      </div>
+    </div>
+  </div>
 ```
 
 ### Dataselect
