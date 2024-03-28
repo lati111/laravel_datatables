@@ -1,4 +1,6 @@
 import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
+import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
+import {DatalistLoadingError} from "../../Exceptions/DatalistLoadingError";
 
 /** @property {Element} cardTemplate The template element that serves as the base for all cards */
 
@@ -12,7 +14,7 @@ export class DataCardList extends AbstractDataproviderTemplate {
         const cardTemplateId = this.dataprovider.getAttribute('data-card-template') ?? this.dataproviderID + '-template'
         this.cardTemplate = document.querySelector('#'+cardTemplateId);
         if (this.cardTemplate === null) {
-            throw new Error(`Card template with id #${cardTemplateId} not found on cardlist #`+this.dataproviderID)
+            throw new DatalistConstructionError(`Card template with id #${cardTemplateId} not found on cardlist #`+this.dataproviderID, this.errorCallback)
         }
     }
 
@@ -51,7 +53,7 @@ export class DataCardList extends AbstractDataproviderTemplate {
             if (select !== null && value !== null) {
                 const option = select.querySelector(`option[value="${value}"]`) as HTMLOptionElement|null;
                 if (option === null) {
-                    throw new Error(`Option with value "${value}" does not exist on select "${value}"`)
+                    throw new DatalistLoadingError(`Option with value "${value}" does not exist on select "${value}"`, this.errorCallback)
                 }
 
                 select.querySelector(`option`)?.removeAttribute('selected');

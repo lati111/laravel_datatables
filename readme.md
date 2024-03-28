@@ -81,6 +81,9 @@ The dataproviders also contain a dynamic filtering system, and support for that 
 - `data-unchecked-operator`: The operator to pass to the filter when this element is unchecked, as declared in the filter.
 - `data-unchecked-value`: The value to filter on passed to the filter when this element is unchecked.
 
+#### Custom error handler
+In most cases, you might want to bake in a custom error handler that actually shows the user when an error occurs. You can do this by passing a callback function to `errorCallback` in the constructor of the dataprovider. This callback is called and given the message whenever an error is thrown. 
+
 ### Creating a custom dataprovider script (TS)
 Start creating your own receiver class for a dataprovider, simply create a class extending `DataproviderBase`. Afterwards you must implement it's abstract methods.
 The first being `abstract fetchData(url: string): Promise<any>` and it's counterpart `abstract [postData(url: string, parameters: FormData): Promise<any>`, which should retrieve the json data from your dataprovider and convert it into an array filled with associative arrays.

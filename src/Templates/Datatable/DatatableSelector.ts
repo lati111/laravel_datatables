@@ -1,4 +1,5 @@
 import {Datatable} from "./Datatable";
+import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 
 /**
  * @inheritDoc
@@ -41,7 +42,7 @@ export class DatatableSelector extends Datatable {
 
         const selectListElement = document.querySelector('#' + selectListID)
         if (selectListElement === null) {
-            throw new Error('selectorlist not defined on ' + this.dataproviderID);
+            throw new DatalistConstructionError('selectorlist not defined on ' + this.dataproviderID, this.errorCallback);
         }
 
         this.selectList = selectListElement;
@@ -60,7 +61,7 @@ export class DatatableSelector extends Datatable {
 
         //check identifiers
         if (this.itemIdentifierKey === null) {
-            throw new Error('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"')
+            throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"', this.errorCallback)
         }
     }
 

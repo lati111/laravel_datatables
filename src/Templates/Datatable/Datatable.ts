@@ -1,6 +1,7 @@
 import {Column} from "./Data/Column";
 import {ColumnHandler} from "./Data/ColumnHandler";
 import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
+import {DatalistError} from "../../Exceptions/DatalistError";
 /**
  * @inheritDoc
  *
@@ -82,7 +83,7 @@ export class Datatable extends AbstractDataproviderTemplate {
         let sortdir = header.getAttribute('data-sort-dir');
         const img = header.querySelector('img.sort-image') as HTMLImageElement|null;
         if (img === null) {
-            throw new Error("Sort image undefined on header");
+            throw new DatalistError("Sort image undefined on header", this.errorCallback);
         }
 
         switch (sortdir) {

@@ -1,4 +1,5 @@
 import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
+import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 
 /** @protected {Element|null} expandButton The button responsible for expanding the body
  * @protected {Element|null} collapseButton The button responsible for collapsing the body
@@ -33,7 +34,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
         const expandButtonId = this.dataprovider.getAttribute('data-expand-button-id') ?? this.dataproviderID+'-expand-button';
         this.expandButton = document.querySelector('#' + expandButtonId);
         if (this.expandButton === null) {
-            throw new Error('Expand button with id "#' + expandButtonId + '" not found on dataselector "#' + this.dataproviderID + '"')
+            throw new DatalistConstructionError('Expand button with id "#' + expandButtonId + '" not found on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
 
         this.expandButton.addEventListener('click', this.expandEvent.bind(this));
@@ -41,14 +42,14 @@ export class DataSelect extends AbstractDataproviderTemplate {
         const collapseButtonId = this.dataprovider.getAttribute('data-collapse-button-id') ?? this.dataproviderID+'-collapse-button';
         this.collapseButton = document.querySelector('#' + collapseButtonId);
         if (this.collapseButton === null) {
-            throw new Error('Collapse button with id "#' + collapseButtonId + '" not found on dataselector "#' + this.dataproviderID + '"')
+            throw new DatalistConstructionError('Collapse button with id "#' + collapseButtonId + '" not found on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
 
         this.collapseButton.addEventListener('click', this.collapseEvent.bind(this));
 
         //check identifiers
         if (this.itemIdentifierKey === null) {
-            throw new Error('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"')
+            throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"', this.errorCallback)
         }
 
         this.defaultLabel = this.dataprovider.getAttribute('data-default-label') ?? '...';

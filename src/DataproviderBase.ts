@@ -1,3 +1,6 @@
+import {DatalistConstructionError} from "./Exceptions/DatalistConstructionError";
+import {DatalistError} from "./Exceptions/DatalistError";
+
 /**
  * @property {Element} dataprovider The main element of the data provider
  * @property {string} dataproviderID The ID of the dataprovider
@@ -42,7 +45,7 @@ export abstract class DataproviderBase {
     protected readonly dataproviderID: string;
     public url: string;
     public urlTemplate: string;
-    protected loading: boolean = false;
+    protected errorCallback: Function|null;
 
     //| Dataprovider settings
     protected history: boolean = true;
@@ -51,6 +54,7 @@ export abstract class DataproviderBase {
     protected showBodyDuringLoad: boolean = true;
     /** @type {boolean} Whether or not this dataprovider is readonly */
     protected readonly: boolean = false;
+    protected loading: boolean = false;
 
     //| Body properties
     protected body: Element;
@@ -100,7 +104,9 @@ export abstract class DataproviderBase {
     /** @type {Function|null} An event triggered when an actuve item is toggled as inactive. Passes the dataprovider and the item as parameters. */
     public onItemDisableEvent: Function|null = null;
 
-    public constructor(dataprovider: Element | string) {
+    public constructor(dataprovider: Element | string, errorCallback: Function|null = null) {
+        this.errorCallback = errorCallback;
+
         if (typeof dataprovider === 'string') {
             dataprovider = document.querySelector('#' + dataprovider + '.dataprovider')!;
         }
@@ -110,7 +116,7 @@ export abstract class DataproviderBase {
 
         const dataUrl = this.dataprovider.getAttribute('data-content-url');
         if (dataUrl === null) {
-            throw new Error('Could not find attribute data-content-url on dataprovider with ID ' + dataUrl);
+            throw new DatalistConstructionError('Could not find attribute data-content-url on dataprovider with ID ' + dataUrl, this.errorCallback);
         }
 
         const history = this.dataprovider.getAttribute('data-history');
@@ -173,7 +179,7 @@ export abstract class DataproviderBase {
 
         const contentElement = document.querySelector('#' + contentID)
         if (contentElement === null) {
-            throw new Error('Could not find content on dataprovider with ID ' + contentID);
+            throw new DatalistConstructionError('Could not find content on dataprovider with ID ' + contentID, this.errorCallback);
         }
         this.body = contentElement;
 
@@ -226,8 +232,7 @@ export abstract class DataproviderBase {
 
         const url = paginationElement.getAttribute('data-count-url');
         if (url === null) {
-            console.error('Pagination with ID "'+paginationID+'" is missing attribute "data-count-url"')
-            return;
+            throw new DatalistConstructionError('Pagination with ID "'+paginationID+'" is missing attribute "data-count-url"', this.errorCallback)
         }
 
         this.pagination = paginationElement;
@@ -418,7 +423,7 @@ export abstract class DataproviderBase {
     protected toggleItemActivityEvent(element:HTMLInputElement) {
         const dataItem = element.closest('.data-item');
         if (dataItem === null) {
-            throw new Error('Data item not found on activity toggle');
+            throw new DatalistError('Data item not found on activity toggle', this.errorCallback);
         }
 
         if (element.checked) {

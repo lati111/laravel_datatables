@@ -1,4 +1,5 @@
 import {Datatable} from "./Datatable";
+import {DatalistError} from "../../Exceptions/DatalistError";
 
 /**
  * @property {string} saveUrl The url where to save this item to
@@ -31,7 +32,7 @@ export class DatatableForm extends Datatable {
         // save url
         const saveUrl = this.dataprovider.getAttribute('data-save-url');
         if (saveUrl === null || saveUrl === '') {
-            throw new Error('Save url not defined in datatable form #'+this.dataproviderID);
+            throw new DatalistError('Save url not defined in datatable form #'+this.dataproviderID, this.errorCallback);
         }
         this.saveUrl = saveUrl;
         this.saveUrlTemplate = saveUrl;
@@ -135,7 +136,7 @@ export class DatatableForm extends Datatable {
         for (let i = 0; i < inputs.length; i++) {
             const input = inputs[i] as HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement;
             if (input.name === null) {
-                throw new Error('input missing on input ' + input.outerHTML)
+                throw new DatalistError('input missing on input ' + input.outerHTML, this.errorCallback)
             }
 
             const column = this.columns[input.name];
