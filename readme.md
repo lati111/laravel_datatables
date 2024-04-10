@@ -81,6 +81,10 @@ The dataproviders also contain a dynamic filtering system, and support for that 
 - `data-unchecked-operator`: The operator to pass to the filter when this element is unchecked, as declared in the filter.
 - `data-unchecked-value`: The value to filter on passed to the filter when this element is unchecked.
 
+#### Using events
+The datalists also have a number of available events that you can call **before** initialization of the datalist. These events are triggered at certain points, allowing you to inject code into the datalist without having to create a whole new class for it. Below follows a list of events.
+- `onItemCreateEvent`: An event that is triggered during the adding of an element. A common use case for this is to modify a new item before it enters the datalist. Passes the datalist instance, and the item. If your callback returns an `HTMLElement` that element is used as the new item.
+
 #### Custom error handler
 In most cases, you might want to bake in a custom error handler that actually shows the user when an error occurs. You can do this by passing a callback function to `errorCallback` in the constructor of the dataprovider. This callback is called and given the message whenever an error is thrown. 
 

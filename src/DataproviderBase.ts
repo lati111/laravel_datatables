@@ -99,6 +99,8 @@ export abstract class DataproviderBase {
     protected searchterm: string | null = null;
 
     //| Event callbacks
+    /** @type {Function|null} An event triggered when an item is created. Passes the dataprovider and the item as parameters. If the item is returned in the callback, the new item will be used */
+    public onItemCreateEvent: Function|null = null;
     /** @type {Function|null} An event triggered when an inactive item is set as active. Passes the dataprovider and the item as parameters. */
     public onItemEnableEvent: Function|null = null;
     /** @type {Function|null} An event triggered when an actuve item is toggled as inactive. Passes the dataprovider and the item as parameters. */
@@ -1050,11 +1052,18 @@ export abstract class DataproviderBase {
             data[this.itemIdentifierKey] = this.newItemIdentifier;
         }
 
-        const item = this.createNewItem(data)
+        let item = this.createNewItem(data)
         item.classList.add('data-item-readonly-sensitive');
         item.classList.add('hidden-when-readonly');
         if (this.readonly) {
             item.classList.add('hidden');
+        }
+
+        if (this.onItemCreateEvent !== null) {
+            const newItem = this.onItemCreateEvent(this, item);
+            if (newItem instanceof HTMLElement) {
+                item = newItem;
+            }
         }
 
         this.body.prepend(this.addItemEvents(item, data));
@@ -1073,7 +1082,14 @@ export abstract class DataproviderBase {
      * @return void
      */
     protected addItem(data:{[key:string]:any}): void {
-        const item = this.createItem(data);
+        let item = this.createItem(data);
+
+        if (this.onItemCreateEvent !== null) {
+            const newItem = this.onItemCreateEvent(this, item);
+            if (newItem instanceof HTMLElement) {
+                item = newItem;
+            }
+        }
 
         this.body.append(this.addItemEvents(item, data));
     }
