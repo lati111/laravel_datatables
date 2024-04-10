@@ -1056,7 +1056,8 @@ export abstract class DataproviderBase {
         item.classList.add('data-item-readonly-sensitive');
         item.classList.add('hidden-when-readonly');
         if (this.readonly) {
-            item.classList.add('hidden');
+            item.classList.add('data-item-readonly');
+            item.classList.add('hidden')
         }
 
         if (this.onItemCreateEvent !== null) {
