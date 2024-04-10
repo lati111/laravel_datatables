@@ -1060,7 +1060,7 @@ export abstract class DataproviderBase {
         }
 
         if (this.onItemCreateEvent !== null) {
-            const newItem = this.onItemCreateEvent(this, item);
+            const newItem = this.onItemCreateEvent(this, item, data);
             if (newItem instanceof HTMLElement) {
                 item = newItem;
             }
@@ -1085,7 +1085,7 @@ export abstract class DataproviderBase {
         let item = this.createItem(data);
 
         if (this.onItemCreateEvent !== null) {
-            const newItem = this.onItemCreateEvent(this, item);
+            const newItem = this.onItemCreateEvent(this, item, data);
             if (newItem instanceof HTMLElement) {
                 item = newItem;
             }
