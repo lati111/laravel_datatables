@@ -1,36 +1,28 @@
 import {Datatable} from "./Datatable";
 import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
+import {Item} from "./Data/Item";
 
 /**
  * @inheritDoc
  *
  * @property {Element|null} selectList List where selected items should be displayed
- * @property {Array} selectedItems An associative array containing all the selected items
  *
  * @property {string|null} selectionUrl Url to get list of selected items from during the pre-load phase
  * @property {string|null} selectionUrlTemplate Url to get list of selected items from during the pre-load phase when url is dynamic
- *
- * @property {boolean} allowSelectEvents If select events should be fired
- *
- * @property {Function|null} onSelectEvent Callback to trigger when an item is selected
- * @property {Function|null} onDeselectEvent Callback to trigger when an item is deselected
  */
 
 export class DatatableSelector extends Datatable {
     protected selectList: Element | null = null;
     protected selectedItems:{[key: string]: Item} = {};
-
     protected selectionUrl: string | null = null;
     protected selectionUrlTemplate: string | null = null;
-
-    protected allowSelectEvents: boolean = true;
-
-    public onSelectEvent: Function| null = null;
-    public onDeselectEvent: Function| null = null;
 
     /** @inheritDoc */
     protected setup() {
         super.setup();
+
+        this.selectionModeIsEnabled = true;
+        this.setupSelectionMode();
 
         //set selectlist element
         let selectListID = this.dataprovider.getAttribute('data-select-list-ID');
@@ -39,11 +31,6 @@ export class DatatableSelector extends Datatable {
         }
 
         this.selectList = document.querySelector('#' + selectListID);
-
-        //create checkbox header
-        const th = document.createElement('th');
-        th.classList.value = this.dataprovider.getAttribute('data-checkbox-header-cls') ?? '';
-        this.dataprovider.querySelector('thead tr')!.prepend(th)
 
         //set selection preload urls
         this.selectionUrl = this.dataprovider.getAttribute('data-selection-url')
@@ -100,50 +87,6 @@ export class DatatableSelector extends Datatable {
     }
 
     /** @inheritDoc */
-    protected createItem(data:{[key:string]:any}): HTMLElement {
-        const row = super.createItem(data);
-        const td = document.createElement('td');
-
-        const checkbox = document.createElement('input');
-        checkbox.setAttribute('data-id', data[this.itemIdentifierKey!]);
-        checkbox.type = 'checkbox';
-
-        const item = new Item(data[this.itemIdentifierKey!], data[this.itemLabelKey!])
-        if (data[this.itemIdentifierKey!] in this.selectedItems) {
-            checkbox.checked = true;
-        }
-
-        if (this.readonly) {
-            checkbox.setAttribute('disabled', 'disabled');
-        } else {
-            checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
-        }
-
-        td.append(checkbox);
-        row.prepend(td)
-        return row;
-    }
-
-    /**
-     * Marks/unmarks an item as selected
-     * @param {Item} item The item to mark/unmark
-     * @return void
-     */
-    public selectItemEvent(item:Item): void {
-        //unmark
-        if (item.identifier in this.selectedItems) {
-            this.deselectItem(item);
-            return;
-        }
-
-        //mark
-        this.selectItem(item);
-    }
-
-    /**
-     * Mark an item as selected
-     * @param {Item} item The item to mark
-     */
     protected selectItem(item:Item) {
         // add element to selected item container
         if (this.selectList !== null) {
@@ -168,20 +111,10 @@ export class DatatableSelector extends Datatable {
             this.selectList.append(element)
         }
 
-        // add item to internal array
-        this.selectedItems[item.identifier] = item;
-
-        // fire event
-        if (this.onSelectEvent !== null && this.allowSelectEvents) {
-            this.onSelectEvent(this, item.identifier)
-        }
+        super.selectItem(item);
     }
 
-
-    /**
-     * Unmark an item as selected
-     * @param {Item} item The item to unmark
-     */
+    /** @inheritDoc */
     protected deselectItem(item:Item) {
         // delete item element in selection container if it exists
         if (item.element !== null) {
@@ -189,14 +122,7 @@ export class DatatableSelector extends Datatable {
             item.element = null;
         }
 
-        // fire event callback if it exists
-        if (this.onDeselectEvent !== null && this.allowSelectEvents) {
-            this.onDeselectEvent(this, item.identifier)
-        }
-
-        // delete item from internal array
-        delete this.selectedItems[item.identifier];
-        return;
+        super.deselectItem(item);
     }
 
     /**
@@ -243,16 +169,5 @@ export class DatatableSelector extends Datatable {
         this.selectedItems = {};
         this.selectList!.innerHTML = '';
         await this.load(true)
-    }
-}
-
-class Item {
-    public readonly identifier:string;
-    public readonly label:string;
-    public element:Element|null = null;
-
-    constructor(identifier:string, label:string = identifier) {
-        this.identifier = identifier;
-        this.label = label;
     }
 }

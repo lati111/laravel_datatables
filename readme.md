@@ -11,6 +11,8 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
       * [Using readonly mode](#using-readonly-mode)
       * [Using activity toggles](#using-activity-toggles)
       * [Using filtering](#using-filtering)
+      * [Using events](#using-events)
+      * [Custom error handler](#custom-error-handler)
     * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
       * [Adding new functions](#adding-new-functions)
     * [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)

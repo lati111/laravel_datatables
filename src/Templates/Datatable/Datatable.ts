@@ -2,6 +2,7 @@ import {Column} from "./Data/Column";
 import {ColumnHandler} from "./Data/ColumnHandler";
 import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
 import {DatalistError} from "../../Exceptions/DatalistError";
+import {Item} from "./Data/Item";
 /**
  * @inheritDoc
  *
@@ -22,6 +23,20 @@ export class Datatable extends AbstractDataproviderTemplate {
     protected sortDescendingImagePath:string|null = null;
     protected sortAscendingImagePath:string|null = null;
 
+    /** @type {boolean} Whether selection mode is active */
+    protected selectionModeIsEnabled:boolean = false;
+    /** @type {HTMLElement|null} The bar that should be shown when items are selected */
+    protected actionbar:HTMLElement|null = null;
+    /** @type {Array} An associative array containing all the selected items */
+    protected selectedItems:{[key: string]: Item} = {};
+
+    /** @type {boolean} If select events should be fired */
+    protected allowSelectEvents: boolean = true;
+    /** @type {Function|null} Callback to trigger when an item is selected */
+    public onSelectEvent: Function| null = null;
+    /** @type {Function|null} Callback to trigger when an item is deselected */
+    public onDeselectEvent: Function| null = null;
+
     /** @inheritDoc */
     protected setup(): void {
         super.setup();
@@ -40,6 +55,28 @@ export class Datatable extends AbstractDataproviderTemplate {
         this.sortNeutralImagePath = this.dataprovider.getAttribute('data-sort-img-neutral');
         this.sortDescendingImagePath = this.dataprovider.getAttribute('data-sort-img-desc');
         this.sortAscendingImagePath = this.dataprovider.getAttribute('data-sort-img-asc');
+
+        // setup selection mode
+        if (this.dataprovider.getAttribute('data-selection-mode') === 'true') {
+            this.selectionModeIsEnabled = true;
+            this.setupSelectionMode();
+        }
+    }
+
+    /**
+     * Sets up the necessary elements for selection mode
+     * @return void
+     */
+    protected setupSelectionMode() {
+        //create checkbox header
+        const th = document.createElement('th');
+        th.classList.value = this.dataprovider.getAttribute('data-checkbox-header-cls') ?? '';
+        this.dataprovider.querySelector('thead tr')!.prepend(th)
+
+        // setup action bar
+        const actionbarID = this.dataprovider.getAttribute('data-actionbar-id') ?? this.dataproviderID + '-action-bar';
+        this.actionbar = document.querySelector('#'+actionbarID);
+        this.actionbar?.classList.add('hidden');
     }
 
     /**
@@ -73,6 +110,60 @@ export class Datatable extends AbstractDataproviderTemplate {
             index++;
         }
     }
+
+    //| Events
+
+    /**
+     * Marks/unmarks an item as selected
+     * @param {Item} item The item to mark/unmark
+     * @return void
+     */
+    public selectItemEvent(item:Item): void {
+        if (item.identifier in this.selectedItems) {
+            //unmark
+            this.deselectItem(item);
+        } else {
+            //mark
+            this.selectItem(item);
+        }
+
+        if (Object.keys(this.selectedItems).length > 0) {
+            this.actionbar?.classList.remove('hidden')
+        } else {
+            this.actionbar?.classList.add('hidden')
+        }
+    }
+
+    /**
+     * Mark an item as selected
+     * @param {Item} item The item to mark
+     */
+    protected selectItem(item:Item) {
+        // add item to internal array
+        this.selectedItems[item.identifier] = item;
+
+        // fire event
+        if (this.onSelectEvent !== null && this.allowSelectEvents) {
+            this.onSelectEvent(this, item.identifier)
+        }
+    }
+
+    /**
+     * Unmark an item as selected
+     * @param {Item} item The item to unmark
+     */
+    protected deselectItem(item:Item) {
+        // fire event callback if it exists
+        if (this.onDeselectEvent !== null && this.allowSelectEvents) {
+            this.onDeselectEvent(this, item.identifier)
+        }
+
+        // delete item from internal array
+        delete this.selectedItems[item.identifier];
+        return;
+    }
+
+    //| Header operations
 
     /**
      * Toggle a header element to it's next mode from neutral -> desc -> asc -> neutral...
@@ -235,6 +326,22 @@ export class Datatable extends AbstractDataproviderTemplate {
         const row = document.createElement('tr');
         const rowData:{[key: number]:HTMLTableCellElement} = {};
 
+        if (this.selectionModeIsEnabled) {
+            const checkbox = document.createElement('input');
+            checkbox.setAttribute('data-id', data[this.itemIdentifierKey!]);
+            checkbox.classList.add('data-item-readonly-sensitive');
+            checkbox.name = 'selection-checkbox'
+            checkbox.type = 'checkbox';
+
+            const item = new Item(data[this.itemIdentifierKey!], data[this.itemLabelKey!])
+            if (data[this.itemIdentifierKey!] in this.selectedItems) {
+                checkbox.checked = true;
+            }
+
+            checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
+            row.append(checkbox);
+        }
+
         let key: keyof typeof data;
         for (key in data) {
             if (key in this.columns) {
@@ -261,5 +368,20 @@ export class Datatable extends AbstractDataproviderTemplate {
         }
 
         return row;
+    }
+
+    /**
+     * Gets an array of identifier strings of all the selected items
+     * @return {string[]} Array of identifier strings
+     */
+    public getSelectedItems():string[] {
+        const arr = [];
+
+        let key: keyof typeof this.selectedItems;
+        for (key in this.selectedItems) {
+            arr.push(this.selectedItems[key].identifier);
+        }
+
+        return arr;
     }
 }
