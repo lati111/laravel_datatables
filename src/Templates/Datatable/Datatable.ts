@@ -327,11 +327,13 @@ export class Datatable extends AbstractDataproviderTemplate {
         const rowData:{[key: number]:HTMLTableCellElement} = {};
 
         if (this.selectionModeIsEnabled) {
+            const td = document.createElement('td');
             const checkbox = document.createElement('input');
             checkbox.setAttribute('data-id', data[this.itemIdentifierKey!]);
             checkbox.classList.add('data-item-readonly-sensitive');
             checkbox.name = 'selection-checkbox'
             checkbox.type = 'checkbox';
+            td.append(checkbox);
 
             const item = new Item(data[this.itemIdentifierKey!], data[this.itemLabelKey!])
             if (data[this.itemIdentifierKey!] in this.selectedItems) {
@@ -339,7 +341,7 @@ export class Datatable extends AbstractDataproviderTemplate {
             }
 
             checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
-            row.append(checkbox);
+            row.append(td);
         }
 
         let key: keyof typeof data;
