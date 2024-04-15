@@ -218,6 +218,15 @@ export class DatatableSelector extends Datatable {
 
         return arr;
     }
+
+    /**
+     * Clears the current selection and reloads the table
+     */
+    public async clear(): Promise<void> {
+        this.selectedItems = {};
+        this.selectList!.innerHTML = '';
+        await this.load(true)
+    }
 }
 
 class Item {
