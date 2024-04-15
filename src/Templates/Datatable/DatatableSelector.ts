@@ -38,24 +38,16 @@ export class DatatableSelector extends Datatable {
             selectListID = this.dataproviderID + '-select-list';
         }
 
-        const selectListElement = document.querySelector('#' + selectListID)
-        if (selectListElement === null) {
-            throw new DatalistConstructionError('selectorlist not defined on ' + this.dataproviderID, this.errorCallback);
-        }
-
-        this.selectList = selectListElement;
+        this.selectList = document.querySelector('#' + selectListID);
 
         //create checkbox header
         const th = document.createElement('th');
-        th.classList.value = selectListElement.getAttribute('data-checkbox-header-cls') ?? '';
+        th.classList.value = this.dataprovider.getAttribute('data-checkbox-header-cls') ?? '';
         this.dataprovider.querySelector('thead tr')!.prepend(th)
 
         //set selection preload urls
-        this.selectionUrl = this.selectList?.getAttribute('data-selection-url');
+        this.selectionUrl = this.dataprovider.getAttribute('data-selection-url')
         this.selectionUrlTemplate = this.selectionUrl
-
-        //set readonly
-        this.readonly = (this.selectList?.getAttribute('data-readonly') === 'true') ?? false;
 
         //check identifiers
         if (this.itemIdentifierKey === null) {
@@ -74,15 +66,16 @@ export class DatatableSelector extends Datatable {
      * @return void
      */
     protected async loadSelections() {
-        if (this.selectionUrl === null || this.selectionUrl === undefined || this.blockLoading) {
+        if (this.selectionUrl === null || this.blockLoading) {
             return;
         }
 
-        this.selectList!.innerHTML = '';
         this.selectedItems = {};
+        if (this.selectList !== null) {
+            this.selectList.innerHTML = '';
+        }
 
         const data = await this.fetchData(this.selectionUrl);
-
         this.allowSelectEvents = false;
 
         let key: keyof typeof data;
@@ -139,20 +132,20 @@ export class DatatableSelector extends Datatable {
     public selectItemEvent(item:Item): void {
         //unmark
         if (item.identifier in this.selectedItems) {
-            if (item.element !== null) {
-                item.element.remove();
-                item.element = null;
-            }
-
-            if (this.onDeselectEvent !== null && this.allowSelectEvents) {
-                this.onDeselectEvent(this, item.identifier)
-            }
-
-            delete this.selectedItems[item.identifier];
+            this.deselectItem(item);
             return;
         }
 
         //mark
+        this.selectItem(item);
+    }
+
+    /**
+     * Mark an item as selected
+     * @param {Item} item The item to mark
+     */
+    protected selectItem(item:Item) {
+        // add element to selected item container
         if (this.selectList !== null) {
             const element = document.createElement('div');
             element.classList.value = this.selectList.getAttribute('data-item-cls') ?? '';
@@ -163,23 +156,47 @@ export class DatatableSelector extends Datatable {
             label.textContent = item.label;
             element.append(label)
 
-            if (this.readonly === false) {
-                const button = document.createElement('button')
-                button.classList.value = this.selectList.getAttribute('data-item-close-button-cls') ?? '';
-                button.addEventListener('click', this.removeSelectedItemEvent.bind(this, item.identifier));
-                button.innerHTML =  this.selectList.getAttribute('data-item-close-button-content') ?? '<span>X</span>';
-                element.append(button)
-            }
+            const button = document.createElement('button')
+            button.classList.value = this.selectList.getAttribute('data-item-close-button-cls') ?? '';
+            button.classList.add('data-item-readonly-sensitive');
+            button.classList.add('hidden-when-readonly');
+            button.addEventListener('click', this.removeSelectedItemEvent.bind(this, item.identifier));
+            button.innerHTML =  this.selectList.getAttribute('data-item-close-button-content') ?? '<span>X</span>';
+            element.append(button)
 
             item.element = element;
-            this.selectList?.append(element)
+            this.selectList.append(element)
         }
 
+        // add item to internal array
         this.selectedItems[item.identifier] = item;
+
+        // fire event
         if (this.onSelectEvent !== null && this.allowSelectEvents) {
             this.onSelectEvent(this, item.identifier)
         }
+    }
 
+
+    /**
+     * Unmark an item as selected
+     * @param {Item} item The item to unmark
+     */
+    protected deselectItem(item:Item) {
+        // delete item element in selection container if it exists
+        if (item.element !== null) {
+            item.element.remove();
+            item.element = null;
+        }
+
+        // fire event callback if it exists
+        if (this.onDeselectEvent !== null && this.allowSelectEvents) {
+            this.onDeselectEvent(this, item.identifier)
+        }
+
+        // delete item from internal array
+        delete this.selectedItems[item.identifier];
+        return;
     }
 
     /**
