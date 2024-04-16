@@ -251,6 +251,8 @@ export class Datatable extends AbstractDataproviderTemplate {
         this.columnHandlers[columnId].getter = getter;
     }
 
+    //| Data operations
+
     /**
      * Gets the sort data as an associative array
      * @return {array} Sort data as associative array
@@ -322,6 +324,19 @@ export class Datatable extends AbstractDataproviderTemplate {
     }
 
     /** @inheritDoc */
+    public async load(shouldResetPagination: boolean = false, keepContents: boolean = false) {
+        await super.load(shouldResetPagination, keepContents);
+
+        if (Object.keys(this.selectedItems).length > 0) {
+            this.actionbar?.classList.remove('hidden')
+        } else {
+            this.actionbar?.classList.add('hidden')
+        }
+    }
+
+    //| Dom operations
+
+    /** @inheritDoc */
     protected createItem(data:{[key:string]:any}): HTMLElement {
         const row = document.createElement('tr');
         const rowData:{[key: number]:HTMLTableCellElement} = {};
@@ -371,6 +386,8 @@ export class Datatable extends AbstractDataproviderTemplate {
 
         return row;
     }
+
+    //| Public methods
 
     /**
      * Gets an array of identifier strings of all the selected items
