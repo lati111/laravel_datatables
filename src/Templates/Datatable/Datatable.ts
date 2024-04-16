@@ -386,4 +386,16 @@ export class Datatable extends AbstractDataproviderTemplate {
 
         return arr;
     }
+
+    /**
+     * Sets the visibility of the actionbar
+     * @param {boolean} visible Whether to make the actionbar visible
+     */
+    public setActionbarVisibility(visible:boolean): void {
+        if (visible) {
+            this.actionbar?.classList.remove('hidden');
+        } else {
+            this.actionbar?.classList.add('hidden');
+        }
+    }
 }
