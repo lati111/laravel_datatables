@@ -124,7 +124,13 @@ export class DatatableForm extends Datatable {
 
         button.innerHTML = this.saveButtonContent;
         button.addEventListener('click', this.saveRow.bind(this, row));
-        buttonCell.prepend(button)
+        
+        const wrapper = buttonCell.querySelector('.data-item-wrapper');
+        if (wrapper !== null) {
+            wrapper.append(button);
+        } else {
+            buttonCell.append(button);
+        }
 
         return row;
     }

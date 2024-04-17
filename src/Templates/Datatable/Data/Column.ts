@@ -58,7 +58,8 @@ export class Column {
         if (this.wrapperCls !== null) {
             container = document.createElement('div');
             container.classList.value = this.wrapperCls;
-            td.append('container')
+            container.classList.add('data-item-wrapper')
+            td.append(container)
         }
 
         // set the contents
