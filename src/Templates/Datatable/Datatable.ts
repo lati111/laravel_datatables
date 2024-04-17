@@ -95,6 +95,7 @@ export class Datatable extends AbstractDataproviderTemplate {
             column.format = header.getAttribute('data-format');
             column.default = header.getAttribute('data-default');
             column.cellCls = header.getAttribute('data-cell-cls') ?? '';
+            column.wrapperCls = header.getAttribute('data-wrapper-cls') ?? '';
 
             const size = header.getAttribute('data-size');
             if (size !== null) {

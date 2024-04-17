@@ -455,6 +455,8 @@ Furthermore, a column can have a range of optional attributes for futher customi
 - `data-visible`: Whether or not this column and it's cells should be visible. True by default.
 - `data-sortable`: If this column can be sorted or not. False by default.
 - `data-sort-dir`: What direction this column is sorting in. Neutral by default.
+- `data-cell-cls`: The classes to add to the `<td>` contianing the cell's data for this column.
+- `data-wrapper-cls`: The classes to add to the wrapper of a cell's content. If unset no wrapper will be added.
 - `data-format`: A HTML string that will be placed in this column's cells. The text `[value]` will be replaced with the actual value on input.
 - `data-default`: A default value for the column if no value is given. By default none.
 

@@ -14,6 +14,8 @@ export class Column {
     public index:number;
     public size:number|null = null;
     public cellCls:string = '';
+    /** @type {string} Additional classes for the wrapper */
+    public wrapperCls:string|null = null;
     public default:string|null = null;
     public format:string|null = null;
     public visible:boolean = true;
@@ -37,6 +39,7 @@ export class Column {
             td.classList.add('hidden');
         }
 
+        // set default value
         if (value === null) {
             if (this.default !== null) {
                 value = this.default
@@ -45,22 +48,41 @@ export class Column {
             }
         }
 
+        // set size
         if (this.size !== null) {
             td.style.width = this.size + '% !important'
         }
 
+        // create wrapper
+        let container: HTMLElement = td;
+        if (this.wrapperCls !== null) {
+            container = document.createElement('div');
+            container.classList.value = this.wrapperCls;
+            td.append('container')
+        }
+
+        // set the contents
         if (typeof this.handler?.setter === 'function') {
+            // through setter
             if (this.format !== null) {
-                td.innerHTML = this.format;
+                container.innerHTML = this.format;
             }
 
             this.handler.set(td, value);
         } else if (this.format !== null) {
-            td.innerHTML = this.format.replace(/\[value]/gmi, value);
+            // through format
+            container.innerHTML = this.format.replace(/\[value]/gmi, value);
         } else {
-            td.innerHTML = value;
+            // through plain text
+            container.innerHTML = value;
         }
 
+        // return td without wrapper
+        if (this.wrapperCls === null) {
+            return container as HTMLTableCellElement;
+        }
+
+        // return td with wrapper
         return td;
     }
 }
