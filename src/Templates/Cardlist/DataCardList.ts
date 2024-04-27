@@ -89,6 +89,15 @@ export class DataCardList extends AbstractDataproviderTemplate {
             if (unhidden !== null) {
                 unhidden.classList.add('hidden');
             }
+
+            //misc data
+            const misc = item.querySelector(`[data-attribute-name="${key}"]`) as Element|null;
+            if (misc !== null) {
+                const attribute = misc.getAttribute('data-settable-attribute');
+                if (attribute !== null) {
+                    misc.setAttribute(attribute, value);
+                }
+            }
         }
 
         return item;
