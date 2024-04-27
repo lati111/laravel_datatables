@@ -81,13 +81,17 @@ export class DataCardList extends AbstractDataproviderTemplate {
             //show hidden elements
             const hidden = item.querySelector(`[data-show-if-true-name="${key}"]`) as Element|null
             if (hidden !== null) {
-                hidden.classList.remove('hidden');
+                if (value == true || value == 1) {
+                    hidden.classList.remove('hidden');
+                }
             }
 
             //hide elements
             const unhidden = item.querySelector(`[data-hide-if-true-name="${key}"]`) as Element|null
             if (unhidden !== null) {
-                unhidden.classList.add('hidden');
+                if (value == true || value == 1) {
+                    unhidden.classList.add('hidden');
+                }
             }
 
             //misc data
