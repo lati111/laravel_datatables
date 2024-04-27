@@ -585,7 +585,8 @@ In case the default save method doesn't serve your purposes (such as if you have
 
 ### DataCardList
 The data card list is mostly used as a visual display element, containing a list of copies from a specificied template element with the data filled in. The cardlist requires the `data-card-template` attribute containing the id of the template element to be copied.
-To fill in data into the template, an `<input>`, `<select>`, `<textarea>` or a `<span>` element must be present with it's name, or the `data-name` attribute set to the key of the value it should contain. Below follows an example.
+To fill in data into the template, an `<input>`, `<select>`, `<textarea>`, `<img>` or a `<span>` element must be present with it's name, or the `data-name` attribute set to the key of the value it should contain. Below follows an example.
+If the value is a boolean, you can use the `data-show-if-true` and `data-hide-if-true` to hide or show elements dynamically.
 
 ```html
   <div class="flex flex-col justify-center align-items max-w-xl gap-4">

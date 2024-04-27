@@ -60,9 +60,28 @@ export class DataCardList extends AbstractDataproviderTemplate {
                 option.setAttribute('selected', 'selected');
             }
 
+            //set spans
             const span = item.querySelector(`span[name="${key}"], span[data-name="${key}"]`) as HTMLSpanElement|null
             if (span !== null) {
                 span.textContent = value;
+            }
+
+            //set img
+            const img = item.querySelector(`img[name="${key}"], img[data-name="${key}"]`) as HTMLImageElement|null
+            if (img !== null) {
+                img.src = value;
+            }
+
+            //show hidden elements
+            const hidden = item.querySelector(`.data-show-if-true[name="${key}"], .data-show-if-true[data-name="${key}"]`) as Element|null
+            if (hidden !== null) {
+                hidden.classList.remove('hidden');
+            }
+
+            //hide elements
+            const unhidden = item.querySelector(`.data-hide-if-true[name="${key}"], .data-hide-if-true[data-name="${key}"]`) as Element|null
+            if (unhidden !== null) {
+                unhidden.classList.add('hidden');
             }
         }
 
