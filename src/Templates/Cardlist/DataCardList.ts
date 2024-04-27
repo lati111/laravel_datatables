@@ -72,6 +72,12 @@ export class DataCardList extends AbstractDataproviderTemplate {
                 img.src = value;
             }
 
+            //set img alt
+            const imgAlt = item.querySelector(`img[data-alt-name="${key}"]`) as HTMLImageElement|null
+            if (imgAlt !== null) {
+                imgAlt.alt = value;
+            }
+
             //show hidden elements
             const hidden = item.querySelector(`.data-show-if-true[name="${key}"], .data-show-if-true[data-name="${key}"]`) as Element|null
             if (hidden !== null) {
