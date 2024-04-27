@@ -586,7 +586,7 @@ In case the default save method doesn't serve your purposes (such as if you have
 ### DataCardList
 The data card list is mostly used as a visual display element, containing a list of copies from a specificied template element with the data filled in. The cardlist requires the `data-card-template` attribute containing the id of the template element to be copied.
 To fill in data into the template, an `<input>`, `<select>`, `<textarea>`, `<img>` or a `<span>` element must be present with it's name, or the `data-name` attribute set to the key of the value it should contain. Below follows an example.
-If the value is a boolean, you can use the `data-show-if-true` and `data-hide-if-true` to hide or show elements dynamically.
+If the value is a boolean, you can use the `data-show-if-true-name` and `data-hide-if-true-name` attributes to hide or show elements dynamically.
 For an img, you can also use `data-alt-name` to set the alt of an img. 
 If you need to put the value in an attribute you can use `data-attribute-name` to set the value key, and `data-settable-attribute` attribute to set the attribute to set.
 
@@ -603,6 +603,7 @@ If you need to put the value in an attribute you can use `data-attribute-name` t
         <textarea name="description"></textarea>
         <input type="checkbox" name="active">
         <img data-name="picture" data-alt-name="picture-desc">
+        <span data-hide-if-true-name="inactive">this user is active</span>
       </div>
     </div>
   </div>
