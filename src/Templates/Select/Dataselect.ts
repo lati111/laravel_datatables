@@ -62,7 +62,9 @@ export class DataSelect extends AbstractDataproviderTemplate {
         this.collapseButton.classList.add('hidden');
 
         //set scroll events
-        this.body.addEventListener('scrollend', this.scrollEvent.bind(this))
+        if (this.dataprovider.getAttribute('data-dynamic-loading') !== 'false') {
+            this.body.addEventListener('scrollend', this.scrollEvent.bind(this))
+        }
 
         //add cls
         this.optionCls = this.dataprovider.getAttribute('data-option-cls') ?? '';

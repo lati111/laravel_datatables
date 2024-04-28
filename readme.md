@@ -621,6 +621,7 @@ A data select does not actually contain a `<select>` element, rather it has a hi
 - `data-default-label`: The default string to display when no item is selected. Normally `...`.
 - `data-option-cls`: The cls given to any option created by the `generateItem()` method.
 - `data-option-content-cls`: The cls given to any option's content field created by the `generateItem()` method.
+- `data-dynamic-loading`: Whether to dynamically load the select in chunks. Set to false if dataprovider doesn't use paginatable. True by default.
 
 ```html
 <div>
