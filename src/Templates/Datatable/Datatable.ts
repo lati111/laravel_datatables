@@ -28,7 +28,7 @@ export class Datatable extends AbstractDataproviderTemplate {
     /** @type {HTMLElement|null} The bar that should be shown when items are selected */
     protected actionbar:HTMLElement|null = null;
     /** @type {Array} An associative array containing all the selected items */
-    protected selectedItems:{[key: string]: Item} = {};
+    public selectedItems:{[key: string]: Item} = {};
 
     /** @type {boolean} If select events should be fired */
     protected allowSelectEvents: boolean = true;
