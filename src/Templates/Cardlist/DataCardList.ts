@@ -95,11 +95,21 @@ export class DataCardList extends AbstractDataproviderTemplate {
             }
 
             //misc data
-            const misc = item.querySelector(`[data-attribute-name="${key}"]`) as Element|null;
-            if (misc !== null) {
-                const attribute = misc.getAttribute('data-settable-attribute');
+            const miscAttribute = item.querySelector(`[data-attribute-name="${key}"]`) as Element|null;
+            if (miscAttribute !== null) {
+                const attribute = miscAttribute.getAttribute('data-settable-attribute');
                 if (attribute !== null) {
-                    misc.setAttribute(attribute, value);
+                    miscAttribute.setAttribute(attribute, value);
+                }
+            }
+
+            const miscClass = item.querySelector(`[data-add-class-is-true-name="${key}"]`) as Element|null;
+            if (miscClass !== null) {
+                const addableClass = miscClass.getAttribute('data-class-to-add');
+                if (addableClass !== null) {
+                    if (value == true || value == 1) {
+                        miscClass.classList.add(addableClass)
+                    }
                 }
             }
         }
