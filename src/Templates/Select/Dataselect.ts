@@ -63,7 +63,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
 
         //set scroll events
         if (this.dataprovider.getAttribute('data-dynamic-loading') !== 'false') {
-            this.body.addEventListener('scrollend', this.scrollEvent.bind(this))
+            this.body.addEventListener('scroll', this.scrollEvent.bind(this))
         }
 
         //add cls
@@ -146,7 +146,9 @@ export class DataSelect extends AbstractDataproviderTemplate {
      * @return void
      */
     protected async scrollEvent() {
-        await this.load(false, true)
+        if ((this.body.scrollTop + this.body.clientHeight) * 1.1 >= this.body.scrollHeight) {
+            await this.load(false, true)
+        }
     }
 
     /**
@@ -164,6 +166,8 @@ export class DataSelect extends AbstractDataproviderTemplate {
             const searchbar = this.searchbar as HTMLInputElement;
             searchbar.focus();
         }
+
+        this.body.scrollTo(0, 0);
     }
 
     /**
