@@ -23,6 +23,12 @@ export class Datatable extends AbstractDataproviderTemplate {
     protected sortDescendingImagePath:string|null = null;
     protected sortAscendingImagePath:string|null = null;
 
+    /** @type {Function|null} Create a row to be put before the main row. Is given the data array as a parameter. */
+    public createPrefixRow: Function|null = null;
+
+    /** @type {Function|null} Create a row to be put after the main row. Is given the data array as a parameter. */
+    public createSuffixRow: Function|null = null;
+
     /** @type {boolean} Whether selection mode is active */
     protected selectionModeIsEnabled:boolean = false;
     /** @type {HTMLElement|null} The bar that should be shown when items are selected */
@@ -336,6 +342,18 @@ export class Datatable extends AbstractDataproviderTemplate {
     }
 
     //| Dom operations
+    /** @inheritDoc */
+    protected addItem(data:{[key:string]:any}): void {
+        if (this.createPrefixRow !== null) {
+            this.body.append(this.createPrefixRow(data))
+        }
+
+        super.addItem(data);
+
+        if (this.createSuffixRow !== null) {
+            this.body.append(this.createSuffixRow(data))
+        }
+    }
 
     /** @inheritDoc */
     protected createItem(data:{[key:string]:any}): HTMLElement {
