@@ -42,7 +42,7 @@ import {DatalistError} from "./Exceptions/DatalistError";
 export abstract class DataproviderBase {
     //| Core properties
     public dataprovider: Element
-    protected readonly dataproviderID: string;
+    public readonly dataproviderID: string;
     public url: string;
     public urlTemplate: string;
     protected errorCallback: Function|null;
@@ -57,11 +57,11 @@ export abstract class DataproviderBase {
     protected loading: boolean = false;
 
     //| Body properties
-    protected body: Element;
+    public body: Element;
     protected emptyBody = '';
     protected spinner: Element | null = null;
     /** @type {Element|null} The container to disable on load. When not set nothing will be disabled */
-    protected disableContainer: Element | null = null;
+    public disableContainer: Element | null = null;
 
     //| Data item properties
     /** @type {string|null} The key of the value in the data used to identify an item. When null all items are treated as generic */
