@@ -24,6 +24,7 @@ Laravel dataprovider receivers is a collection of extendable scripts and templat
       * [Creating a datatable](#creating-a-datatable)
         * [Creating datatable columns](#creating-datatable-columns)
         * [Custom handlers for columns](#custom-handlers-for-columns)
+        * [Additional rows](#additional-rows)
     * [Datatable selector](#datatable-selector)
       * [Creating a datatable selector](#creating-a-datatable-selector)
       * [Using a datatable selector](#using-a-datatable-selector)
@@ -507,6 +508,10 @@ If your column has a non-standard input where the format function doesn't quite 
     return radioOption.name;
   }
 ```
+
+##### Additional rows
+If you would like to further modify the datatable structure, there are settable callbacks for creating a prefix (`createPrefixRow`) and suffix (`createSuffixRow`) rows. 
+These add an additional row before or after every main row. When set, the method is called during item creation and passed the associative array with data. 
 
 ### Datatable selector
 The `DatatableSelector` is a variant of the `Datatable` class that functions identically for the most part, with a single addition. The `DatatableSelector` is designed to selected multiple entries in the datatable across several pages and pool them in a single result. It does so by adding checkboxes in front of every single entry.
