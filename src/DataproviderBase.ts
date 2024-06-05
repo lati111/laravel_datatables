@@ -816,6 +816,47 @@ export abstract class DataproviderBase {
                 }
             }
         }
+
+        //uncheck autochecked filters if needed
+        const filters = data.filters;
+        const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox')
+        for (let i = 0; i < checkboxes.length ; i++) {
+            const checkbox = checkboxes[i] as HTMLInputElement;
+            if (checkbox.checked === false) {
+                continue;
+            }
+
+            let filter = null;
+            for (const filterElement of filters) {
+                if (filterElement.filter === checkbox.name) {
+                    filter = filterElement;
+                }
+            }
+
+            if (filter === null) {
+                if (checkbox.getAttribute('data-checked-operator') !== null && checkbox.getAttribute('data-checked-value') !== null) {
+                    checkbox.checked = false;
+                }
+
+                continue;
+            }
+
+            if (
+                (checkbox.getAttribute('data-checked-operator') === null || checkbox.getAttribute('data-checked-value') === null) &&
+                checkbox.getAttribute('data-unchecked-operator') === filter.operator &&
+                checkbox.getAttribute('data-unchecked-value') === filter.value
+            ) {
+                checkbox.checked = false;
+                continue;
+            }
+
+            if (
+                checkbox.getAttribute('data-checked-operator') !== filter.operator ||
+                checkbox.getAttribute('data-checked-value') !== filter.value
+            ) {
+                checkbox.checked = false;
+            }
+        }
     }
 
     //| DOM manipulation
