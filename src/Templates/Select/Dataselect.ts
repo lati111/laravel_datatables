@@ -17,7 +17,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
     protected searchTimer: number = 0;
 
     /** @type {string} The default label that is shown when no option is selected */
-    protected defaultLabel: string = '...';
+    protected defaultLabel: string = '';
     protected currentLabel: string = '';
     protected currentIdentifier: string = '';
 
