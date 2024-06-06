@@ -153,9 +153,13 @@ export class DatatableForm extends Datatable {
 
         if (this.saveHandler !== null) {
             await this.saveHandler(row, this.saveUrl, formdata);
-            return;
+        } else {
+            await this.postData(this.saveUrl, formdata);
         }
 
-        await this.postData(this.saveUrl, formdata);
+        if (row.classList.contains('new-row')) {
+            row.classList.remove('data-item-readonly-sensitive');
+            row.classList.remove('hidden-when-readonly');
+        }
     }
 }
