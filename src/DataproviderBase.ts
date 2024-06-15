@@ -1,5 +1,6 @@
 import {DatalistConstructionError} from "./Exceptions/DatalistConstructionError";
 import {DatalistError} from "./Exceptions/DatalistError";
+import {Filter} from "./Data/Filter";
 
 /**
  * @property {Element} dataprovider The main element of the data provider
@@ -65,9 +66,9 @@ export abstract class DataproviderBase {
 
     //| Data item properties
     /** @type {string|null} The key of the value in the data used to identify an item. When null all items are treated as generic */
-    protected itemIdentifierKey: string|null = null;
+    public itemIdentifierKey: string|null = null;
     /** @type {string|null} The key of the value in the data used to display the item. When null the identifier is used as the label */
-    protected itemLabelKey: string|null = null;
+    public itemLabelKey: string|null = null;
     /** @type {string|null} The key of the value in the data used to decide whether an item is active or not */
     protected itemActivityKey: string|null = null;
     /** @type {string} The identifier used for a new item that has not yet received a true id */
@@ -97,6 +98,10 @@ export abstract class DataproviderBase {
     protected searchbarInput: HTMLInputElement | null = null;
     protected searchbarConfirmButton: HTMLButtonElement | null = null;
     protected searchterm: string | null = null;
+
+    //| Filter properties
+    /** @type {Array} The array container the currently active filters */
+    protected filters: Array<Filter> = [];
 
     //| Event callbacks
     /** @type {Function|null} An event triggered when an item is created. Passes the dataprovider and the item as parameters. If the item is returned in the callback, the new item will be used */
@@ -566,70 +571,6 @@ export abstract class DataproviderBase {
     //| Data operations
 
     /**
-     * Generates a request url with the query parameters applied
-     * @param {string} baseUrl The url before any query parameters are applied
-     * @return {URL} Returns the generated URL
-     */
-    protected generateDataUrl(baseUrl:string = this.url):URL {
-        const url = new URL(baseUrl);
-
-        if (this.pagination !== null) {
-            url.searchParams.set('page', (this.page ?? 1).toString());
-            url.searchParams.set('perpage', (this.perpage ?? 10).toString());
-        }
-
-        if (this.searchbar !== null && this.searchterm !== null  && this.searchterm !== '') {
-            url.searchParams.set('search', this.searchterm);
-        }
-
-        const filters = this.getFilters();
-        if (filters.length > 0) {
-            url.searchParams.set('filters', JSON.stringify(filters));
-        }
-
-        return url;
-    }
-
-    /**
-     * Modifies the urls of this dataprovider and resets it
-     * @param {array} replacers Associative array filled with replacers
-     * @return void
-     */
-    public async modifyUrl(replacers:{[key:string]:string}) {
-        this.blockLoading = false;
-        await this.changeUrls(replacers);
-
-        await this.load(true);
-    }
-
-    /**
-     * Changes all the urls on record for this dataprovider
-     * @param {array} replacers Associative array filled with replacers
-     * @return void
-     */
-    protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
-        this.url = this.changeUrl(this.urlTemplate, replacers);
-        if (this.pagecountUrl !== null) {
-            this.pagecountUrl = this.changeUrl(this.pagecountUrlTemplate!, replacers);
-        }
-    }
-
-    /**
-     * Changes the given url according to the given replacers
-     * @param {string} url The url that should be changed
-     * @param {array} replacers Associative array filled with replacers
-     * @return string The changed url
-     */
-    protected changeUrl(url:string, replacers:{[key:string]:string}): string {
-        let key: keyof typeof replacers;
-        for (key in replacers) {
-            url = url.replace(key, replacers[key])
-        }
-
-        return url;
-    }
-
-    /**
      * Loads data from the dataprovider with the selected query parameters applied.
      * @param {boolean} shouldResetPagination Whether the page should be set to 1, false by default.
      * @param {boolean} keepContents Whether the content should be kept instead of deleted. False by default.
@@ -731,6 +672,92 @@ export abstract class DataproviderBase {
     abstract postData(url:string, parameters: FormData): any;
 
     /**
+     * Gets the stored data from the URL and loads in those parameters
+     * @return void
+     */
+    public async loadFromUrlStorage():Promise<void> {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get(this.dataproviderID) === null) {
+            await this.load();
+            return;
+        }
+
+        const data = JSON.parse(url.searchParams.get(this.dataproviderID)!);
+        this.loadDataFromStorage(data);
+
+        await this.load();
+    }
+
+    //| Url operations
+
+    /**
+     * Generates a request url with the query parameters applied
+     * @param {string} baseUrl The url before any query parameters are applied
+     * @return {URL} Returns the generated URL
+     */
+    protected generateDataUrl(baseUrl:string = this.url):URL {
+        let url = new URL(baseUrl);
+
+        if (this.pagination !== null) {
+            url.searchParams.set('page', (this.page ?? 1).toString());
+            url.searchParams.set('perpage', (this.perpage ?? 10).toString());
+        }
+
+        if (this.searchbar !== null && this.searchterm !== null  && this.searchterm !== '') {
+            url.searchParams.set('search', this.searchterm);
+        }
+
+        const filterData = this.getStorableFilterData();
+        if (filterData !== null) {
+            url.searchParams.set('filters', JSON.stringify(filterData));
+        }
+
+        return url;
+    }
+
+    /**
+     * Modifies the urls of this dataprovider and resets it
+     * @param {array} replacers Associative array filled with replacers
+     * @return void
+     */
+    public async modifyUrl(replacers:{[key:string]:string}) {
+        this.blockLoading = false;
+        await this.changeUrls(replacers);
+
+        await this.load(true);
+    }
+
+    /**
+     * Changes all the urls on record for this dataprovider
+     * @param {array} replacers Associative array filled with replacers
+     * @return void
+     */
+    protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
+        this.url = this.changeUrl(this.urlTemplate, replacers);
+        if (this.pagecountUrl !== null) {
+            this.pagecountUrl = this.changeUrl(this.pagecountUrlTemplate!, replacers);
+        }
+    }
+
+    /**
+     * Changes the given url according to the given replacers
+     * @param {string} url The url that should be changed
+     * @param {array} replacers Associative array filled with replacers
+     * @return string The changed url
+     */
+    protected changeUrl(url:string, replacers:{[key:string]:string}): string {
+        let key: keyof typeof replacers;
+        for (key in replacers) {
+            url = url.replace(key, replacers[key])
+        }
+
+        return url;
+    }
+
+
+    //| Data storage operations
+
+    /**
      * Gets an associative array containing the data of the current dataprovider state
      * @return {Object} Returns an associative array with the data
      */
@@ -754,23 +781,6 @@ export abstract class DataproviderBase {
         }
 
         return data;
-    }
-
-    /**
-     * Gets the stored data from the URL and loads in those parameters
-     * @return void
-     */
-    public async loadFromUrlStorage():Promise<void> {
-        const url = new URL(window.location.href);
-        if (url.searchParams.get(this.dataproviderID) === null) {
-            await this.load();
-            return;
-        }
-
-        const data = JSON.parse(url.searchParams.get(this.dataproviderID)!);
-        this.loadDataFromStorage(data);
-
-        await this.load();
     }
 
     /**
@@ -799,6 +809,28 @@ export abstract class DataproviderBase {
             }
         }
 
+        this.loadStoredFilterData(data);
+        this.normalizeFilterCheckboxes(data);
+    }
+
+    /**
+     * Grabs the filter data in storable format
+     * @return {Array|null} The storable data
+     */
+    protected getStorableFilterData(): Array<any>|null {
+        const filters = this.getFilters();
+        if (filters.length > 0) {
+            return filters;
+        }
+
+        return null;
+    }
+
+    /**
+     * Loads the filter data from the stored data
+     * @return void
+     */
+    protected loadStoredFilterData(data:{[key:string]: any}): void {
         if (typeof data.filters === 'object') {
             for (const key in data.filters) {
                 const filter = data.filters[key];
@@ -816,8 +848,46 @@ export abstract class DataproviderBase {
                 }
             }
         }
+    }
 
-        //uncheck autochecked filters if needed
+    //| DOM manipulation
+
+    /**
+     * Check all filter elements and combine the results into an array
+     * @return {Array} An array of filter elements
+     */
+    protected getFilters(): Array<Filter> {
+        const filters: Array<Filter> = this.filters;
+
+        //checkbox filters
+        const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
+        for (let i = 0; i < checkboxes.length; i++) {
+            const checkbox = checkboxes[i];
+            let operator;
+            let value;
+
+            if (checkbox.checked) {
+                operator = checkbox.getAttribute('data-checked-operator') ?? undefined;
+                value = checkbox.getAttribute('data-checked-value') ?? undefined;
+            } else {
+                operator = checkbox.getAttribute('data-unchecked-operator') ?? undefined;
+                value = checkbox.getAttribute('data-unchecked-value') ?? undefined;
+            }
+
+            if (operator !== undefined && operator !== null) {
+                const filter = new Filter(checkbox.name, operator, value);
+                filters.push(filter);
+            }
+        }
+
+        return filters;
+    }
+
+    /**
+     * Unchecks all filter checkboxes that should not be toggled on
+     * @return void
+     */
+    protected normalizeFilterCheckboxes(data:{[key:string]: any}) {
         const filters = data.filters;
         const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox')
         for (let i = 0; i < checkboxes.length ; i++) {
@@ -857,53 +927,6 @@ export abstract class DataproviderBase {
                 checkbox.checked = false;
             }
         }
-    }
-
-    //| DOM manipulation
-
-    /**
-     * Check all filter elements and combine the results into an array
-     * @return void
-     */
-    protected getFilters(): {'filter':string, 'operator'?:string, 'value'?:string}[] {
-        const filters: {'filter':string, 'operator'?:string, 'value'?:string}[] = [];
-        const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
-        for (let i = 0; i < checkboxes.length; i++) {
-            const checkbox = checkboxes[i];
-            const filter: {'filter':string, 'operator'?:string, 'value'?:string} = {
-                'filter': checkbox.name
-            };
-
-            if (checkbox.checked) {
-                filter.operator = checkbox.getAttribute('data-checked-operator') ?? undefined;
-                filter.value = checkbox.getAttribute('data-checked-value') ?? undefined;
-            } else {
-                filter.operator = checkbox.getAttribute('data-unchecked-operator') ?? undefined;
-                filter.value = checkbox.getAttribute('data-unchecked-value') ?? undefined;
-            }
-
-            if (filter.operator !== undefined && filter.operator !== null) {
-                filters.push(filter);
-            }
-        }
-
-        return filters;
-    }
-
-    /**
-     * Sets the datalist to readonly mode. This adds the 'datalist-readonly' class to the datalist, and marks all elements with the 'data-item-readonly-sensitive' not already marked as readonly as readonly, or disabled depending on the type.
-     */
-    public enableReadonlyMode(): void {
-        this.readonly = true;
-        this.applyReadonlyMode();
-    }
-
-    /**
-     * Removes the effects of readonly mode.
-     */
-    public disableReadonlyMode(): void {
-        this.readonly = false;
-        this.removeReadonlyMode();
     }
 
     /**
@@ -1163,5 +1186,34 @@ export abstract class DataproviderBase {
         }
 
         return item;
+    }
+
+    //| Public functions
+
+    /**
+     * Sets the datalist to readonly mode. This adds the 'datalist-readonly' class to the datalist, and marks all elements with the 'data-item-readonly-sensitive' not already marked as readonly as readonly, or disabled depending on the type.
+     */
+    public enableReadonlyMode(): void {
+        this.readonly = true;
+        this.applyReadonlyMode();
+    }
+
+    /**
+     * Removes the effects of readonly mode.
+     */
+    public disableReadonlyMode(): void {
+        this.readonly = false;
+        this.removeReadonlyMode();
+    }
+
+    //| Util
+
+    /**
+     * Format a string to a friendly readable format
+     */
+    protected formatString(string:string) {
+        string = string.replace('_', ' ');
+        string = string.charAt(0).toUpperCase() + string.slice(1);
+        return string;
     }
 }
