@@ -1087,6 +1087,10 @@ export abstract class DataproviderBase {
      * Reset the filter select form back to it's basic form
      */
     protected resetFilterSelects() {
+        if (this.filterSelect === null) {
+            return;
+        }
+
         this.filterSelect!.style.order = '1';
 
         if (this.operatorSelect !== null) {
