@@ -79,32 +79,36 @@ export class DataCardList extends AbstractDataproviderTemplate {
             }
 
             //show hidden elements
-            const hidden = item.querySelector(`[data-show-if-true-name="${key}"]`) as Element|null
-            if (hidden !== null) {
+            const hiddenElements = item.querySelectorAll(`[data-show-if-true-name="${key}"]`) as NodeListOf<Element>;
+            for (let i = 0; i < hiddenElements.length; i++) {
+                const hidden = hiddenElements[i];
                 if (value == true || value == 1) {
                     hidden.classList.remove('hidden');
                 }
             }
 
             //hide elements
-            const unhidden = item.querySelector(`[data-hide-if-true-name="${key}"]`) as Element|null
-            if (unhidden !== null) {
+            const unhiddenElements = item.querySelectorAll(`[data-hide-if-true-name="${key}"]`) as NodeListOf<Element>;
+            for (let i = 0; i < unhiddenElements.length; i++) {
+                const unhidden = unhiddenElements[i];
                 if (value == true || value == 1) {
                     unhidden.classList.add('hidden');
                 }
             }
 
             //misc data
-            const miscAttribute = item.querySelector(`[data-attribute-name="${key}"]`) as Element|null;
-            if (miscAttribute !== null) {
+            const miscAttributes = item.querySelectorAll(`[data-attribute-name="${key}"]`) as NodeListOf<Element>;
+            for (let i = 0; i < miscAttributes.length; i++) {
+                const miscAttribute = miscAttributes[i];
                 const attribute = miscAttribute.getAttribute('data-settable-attribute');
                 if (attribute !== null) {
                     miscAttribute.setAttribute(attribute, value);
                 }
             }
 
-            const miscClass = item.querySelector(`[data-add-class-is-true-name="${key}"]`) as Element|null;
-            if (miscClass !== null) {
+            const miscClasses = item.querySelectorAll(`[data-add-class-is-true-name="${key}"]`) as NodeListOf<Element>;
+            for (let i = 0; i < miscClasses.length; i++) {
+                const miscClass = miscClasses[i];
                 const addableClass = miscClass.getAttribute('data-class-to-add');
                 if (addableClass !== null) {
                     if (value == true || value == 1) {
