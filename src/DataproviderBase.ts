@@ -1011,6 +1011,12 @@ export abstract class DataproviderBase {
      * @return {Array} An array of filter elements
      */
     protected getFilters(): Array<Filter> {
+        for (const storedFilter of this.filters) {
+            if (storedFilter.display === null) {
+                this.filters.splice(this.filters.indexOf(storedFilter), 1)
+            }
+        }
+
         const filters: Array<Filter> = this.filters;
 
         //checkbox filters
@@ -1044,7 +1050,7 @@ export abstract class DataproviderBase {
     protected normalizeFilterCheckboxes(data:{[key:string]: any}) {
         let filters = data.filters;
         if (filters === undefined) {
-            filters = {};
+            filters = [];
         }
 
         const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox')
