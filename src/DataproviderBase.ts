@@ -1042,7 +1042,11 @@ export abstract class DataproviderBase {
      * @return void
      */
     protected normalizeFilterCheckboxes(data:{[key:string]: any}) {
-        const filters = data.filters;
+        let filters = data.filters;
+        if (filters === undefined) {
+            filters = {};
+        }
+
         const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox')
         for (let i = 0; i < checkboxes.length ; i++) {
             const checkbox = checkboxes[i] as HTMLInputElement;
