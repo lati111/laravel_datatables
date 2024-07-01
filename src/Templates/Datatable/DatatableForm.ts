@@ -107,6 +107,19 @@ export class DatatableForm extends Datatable {
         return row;
     }
 
+    /** @inheritDoc */
+    public addNewItem(): void {
+        if (this.createSuffixRow !== null) {
+            this.body.prepend(this.createSuffixRow({}))
+        }
+
+        super.addNewItem();
+
+        if (this.createPrefixRow !== null) {
+            this.body.prepend(this.createPrefixRow({}))
+        }
+    }
+
     /** Adds the save button to the button column */
     protected addSaveButton(row:HTMLElement): HTMLElement {
         let buttonCell = document.createElement('td');
