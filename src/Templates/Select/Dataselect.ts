@@ -52,7 +52,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
             throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"', this.errorCallback)
         }
 
-        this.defaultLabel = this.dataprovider.getAttribute('data-default-label') ?? '...';
+        this.defaultLabel = this.dataprovider.getAttribute('data-default-label') ?? '';
         const searchbar = this.searchbar as HTMLInputElement;
         searchbar.value = this.defaultLabel;
 
@@ -190,6 +190,12 @@ export class DataSelect extends AbstractDataproviderTemplate {
     public getSelectedItem(): string {
         const dataselect = this.dataprovider as HTMLInputElement;
         return dataselect.value;
+    }
+
+    /** Gets the currently selection item's label */
+    public getSelectedLabel(): string {
+        const dataselect = this.searchbar as HTMLInputElement;
+        return dataselect.value
     }
 
     /** Resets the currently selected value to the default */
