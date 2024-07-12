@@ -1,8 +1,8 @@
 import {Column} from "./Data/Column";
 import {ColumnHandler} from "./Data/ColumnHandler";
-import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
 import {DatalistError} from "../../Exceptions/DatalistError";
 import {Item} from "./Data/Item";
+import {AbstractDatalistTemplate} from "../AbstractDatalistTemplate";
 /**
  * @inheritDoc
  *
@@ -14,7 +14,7 @@ import {Item} from "./Data/Item";
  * @property {string|null} sortAscendingImagePath The image used to show that sort mode is ascending on a column. When null no image is shown
  */
 
-export class Datatable extends AbstractDataproviderTemplate {
+export class Datatable extends AbstractDatalistTemplate {
     //| Column properties
 
     protected columns:{[key:string]: Column} = {};

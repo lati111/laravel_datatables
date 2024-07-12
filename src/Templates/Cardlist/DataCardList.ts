@@ -1,10 +1,11 @@
 import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
 import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 import {DatalistLoadingError} from "../../Exceptions/DatalistLoadingError";
+import {AbstractDatalistTemplate} from "../AbstractDatalistTemplate";
 
 /** @property {Element} cardTemplate The template element that serves as the base for all cards */
 
-export class DataCardList extends AbstractDataproviderTemplate {
+export class DataCardList extends AbstractDatalistTemplate {
     protected cardTemplate: Element|null = null;
 
     /** @inheritDoc */

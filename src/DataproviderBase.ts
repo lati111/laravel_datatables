@@ -1,7 +1,6 @@
 import {DatalistConstructionError} from "./Exceptions/DatalistConstructionError";
 import {DatalistError} from "./Exceptions/DatalistError";
 import {Filter} from "./Data/Filter";
-import {DataSelect} from "./Templates/Select/Dataselect";
 import {DatalistFilterError} from "./Exceptions/DatalistFilterError";
 
 /**
@@ -119,12 +118,6 @@ export abstract class DataproviderBase {
 
     /** @type {HTMLSelectElement|null} The element select an operator in the filter form */
     protected operatorSelect: HTMLSelectElement|null = null;
-
-    /** @type {DataSelect|null} The dataselect for values in the filter form */
-    protected valueDataSelect: DataSelect|null = null;
-
-    /** @type {Element|null} The container for the dataselect */
-    protected valueDataSelectContainer: HTMLElement|null = null;
 
     /** @type {Function|null} The event function called after an event is added. Passes dataprovider and filter */
     public filterAddedEvent: Function|null = null;
@@ -408,17 +401,6 @@ export abstract class DataproviderBase {
         }
 
         this.addFilterButton.addEventListener('click', this.addFilterEvent.bind(this));
-
-        // setup dataselect
-        const valueSelect = this.filterForm.querySelector('.dataselect-container [name="dataselect"]');
-        if (valueSelect !== null) {
-            if (valueSelect.id === null) {
-                valueSelect.id = this.dataproviderID + '-value-dataselect';
-            }
-
-            this.valueDataSelect = new DataSelect(valueSelect.id)
-            this.valueDataSelectContainer = this.filterForm.querySelector('.dataselect-container');
-        }
     }
 
     /**
@@ -442,10 +424,6 @@ export abstract class DataproviderBase {
             }
 
             this.filterSelect.addEventListener('change', this.onFilterSelectEvent.bind(this));
-        }
-
-        if (this.valueDataSelect !== null) {
-            await this.valueDataSelect.init();
         }
 
         this.resetFilterSelects();
@@ -1108,11 +1086,6 @@ export abstract class DataproviderBase {
             this.operatorSelect.style.order = '2'
         }
 
-        if (this.valueDataSelect !== null) {
-            this.valueDataSelectContainer!.classList.add('hidden');
-            this.valueDataSelectContainer!.style.order = '3'
-        }
-
         const valueSelects = this.filterForm?.querySelectorAll('.filter-value-select') as NodeListOf<HTMLElement>;
         for (const valueSelect of valueSelects) {
             valueSelect.classList.add('hidden');
@@ -1447,7 +1420,12 @@ export abstract class DataproviderBase {
             this.operatorSelect!.append(operatorOption);
         }
 
-        // active selectors
+        await this.performOnfilterSelect(data)
+
+        this.filterForm?.setAttribute('data-filter-type', data['type']);
+    }
+
+    protected async performOnfilterSelect(data:{[key:string]:any}) {
         switch (data['type']) {
             case 'select':
                 const select = this.filterForm?.querySelector('select[name="select"].filter-value-select') as HTMLSelectElement|null;
@@ -1492,23 +1470,9 @@ export abstract class DataproviderBase {
                 dateInput.min = data['options']['min'];
                 dateInput.classList.remove('hidden');
                 break;
-            case 'data-select':
-                if (this.valueDataSelect === null) {
-                    throw new DatalistConstructionError('Value dataselect not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                }
-
-                this.valueDataSelectContainer?.classList.remove('hidden');
-                this.valueDataSelect.itemIdentifierKey = data['options']['identifier'];
-                this.valueDataSelect.itemLabelKey = data['options']['label'];
-                await this.valueDataSelect.modifyUrl({
-                    'URL': data['options']['url'],
-                });
-
-                break;
         }
-
-        this.filterForm?.setAttribute('data-filter-type', data['type']);
     }
+
 
     /**
      * An event that adds the currently selected filter to the filter list
@@ -1524,12 +1488,19 @@ export abstract class DataproviderBase {
             throw new DatalistFilterError('No operator is selected on the filter form from dataprovider #'+this.dataproviderID, this.errorCallback);
         }
 
+        const type = this.filterForm?.getAttribute('data-filter-type') ?? '';
+        await this.performAddFilterEvent(filter, type, operator)
+    }
+
+    protected async performAddFilterEvent(filter:string, type:string, operator:string) {
         let value = null;
         let displayString = '';
-        switch (this.filterForm?.getAttribute('data-filter-type') ?? '') {
+
+        switch (type) {
             case 'bool':
                 value = (operator === '=') ? '1' : '0'
                 displayString = this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + filter;
+                this.addFilter(displayString, filter, operator, value)
                 break;
             case 'select':
                 const select = this.filterForm?.querySelector('select[name="select"].filter-value-select') as HTMLSelectElement|null;
@@ -1539,6 +1510,7 @@ export abstract class DataproviderBase {
 
                 value = select.value;
                 displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
+                this.addFilter(displayString, filter, operator, value)
                 break;
             case 'number':
                 const numberInput = this.filterForm?.querySelector('input[name="number"][type="number"].filter-value-select') as HTMLInputElement|null;
@@ -1548,6 +1520,7 @@ export abstract class DataproviderBase {
 
                 value = numberInput.value;
                 displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
+                this.addFilter(displayString, filter, operator, value)
                 break;
             case 'date':
                 const dateInput = this.filterForm?.querySelector('input[name="date"][type="date"].filter-value-select') as HTMLInputElement|null;
@@ -1557,18 +1530,9 @@ export abstract class DataproviderBase {
 
                 value = dateInput.value;
                 displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
-                break;
-            case 'data-select':
-                if (this.valueDataSelect === null) {
-                    throw new DatalistConstructionError('Value dataselect not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                }
-
-                value = this.valueDataSelect.getSelectedItem();
-                displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
+                this.addFilter(displayString, filter, operator, value)
                 break;
         }
-
-        this.addFilter(displayString, filter, operator, value)
     }
 
     /**
