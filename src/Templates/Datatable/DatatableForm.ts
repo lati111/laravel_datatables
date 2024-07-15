@@ -125,7 +125,11 @@ export class DatatableForm extends Datatable {
         let buttonCell = document.createElement('td');
         if (this.buttonColumn !== null) {
             const column = this.columns[this.buttonColumn];
-            buttonCell = row.children[column.index] as HTMLTableCellElement
+            if (column === null || column === undefined) {
+                row.append(buttonCell)
+            } else {
+                buttonCell = row.children[column.index] as HTMLTableCellElement
+            }
         } else {
             row.append(buttonCell)
         }
