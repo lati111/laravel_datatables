@@ -989,9 +989,11 @@ export abstract class DataproviderBase {
      * @return {Array} An array of filter elements
      */
     protected getFilters(): Array<Filter> {
-        for (const storedFilter of this.filters) {
+        for (let i = 0; i < this.filters.length; i++) {
+            const storedFilter = this.filters[i];
             if (storedFilter.display === null) {
-                this.filters.splice(this.filters.indexOf(storedFilter), 1)
+                this.filters.splice(i, 1)
+                i--;
             }
         }
 
