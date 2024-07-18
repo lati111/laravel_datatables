@@ -2,6 +2,7 @@ import {DatalistConstructionError} from "./Exceptions/DatalistConstructionError"
 import {DatalistError} from "./Exceptions/DatalistError";
 import {Filter} from "./Data/Filter";
 import {DatalistFilterError} from "./Exceptions/DatalistFilterError";
+import {DataSelect} from "./Templates/Select/Dataselect";
 
 /**
  * @property {Element} dataprovider The main element of the data provider
@@ -901,6 +902,7 @@ export abstract class DataproviderBase {
             const filterArray = [];
             for (const filter of filters) {
                 let json: any ={
+                    'type': filter.type,
                     'filter': filter.filter,
                     'operator': filter.operator,
                     'value': filter.value,
@@ -926,25 +928,38 @@ export abstract class DataproviderBase {
     protected loadStoredFilterData(data:{[key:string]: any}): void {
         if (typeof data.filters === 'object') {
             for (const key in data.filters) {
-                const filter = data.filters[key];
+                const filter = data.filters[key] as {[key:string]:string};
+                this.performLoadStoredFilterData(filter);
+            }
+        }
+    }
+
+    /**
+     * Perform the actual loading of stored filter data
+     * @return void
+     */
+    protected performLoadStoredFilterData(filter:{[key:string]:string}) {
+        switch(filter['type']) {
+            case 'form':
                 if (filter['display'] !== undefined && filter['display'] !== null) {
                     this.addFilter(filter['display'], filter['filter'], filter['operator'], filter['value'] ?? null, true);
-                    continue;
+                    return;
                 }
-
+                break;
+            case 'checkbox':
                 const filterCheckbox = document.querySelector('input[type="checkbox"][name="'+filter['filter']+'"].'+this.dataproviderID+'-filter-checkbox') as HTMLInputElement|null;
                 if (filterCheckbox === null) {
-                    continue;
+                    return;
                 }
 
                 if (filterCheckbox.getAttribute('data-checked-operator') === filter['operator']) {
                     if (Object.hasOwn(filter, 'value') && filterCheckbox.getAttribute('data-checked-value') !== filter['value']) {
-                        continue;
+                        return;
                     }
 
                     filterCheckbox.checked = true;
                 }
-            }
+                break;
         }
     }
 
@@ -969,7 +984,7 @@ export abstract class DataproviderBase {
             }
         }
 
-        const filterItem = new Filter(filter, operator, value, displayString);
+        const filterItem = new Filter('form', filter, operator, value, displayString);
         this.filters.push(filterItem);
         this.addFilterDisplay(filterItem)
 
@@ -988,10 +1003,11 @@ export abstract class DataproviderBase {
      * Check all filter elements and combine the results into an array
      * @return {Array} An array of filter elements
      */
-    protected getFilters(): Array<Filter> {
+    protected getFilters(): Array<Filter>{
         for (let i = 0; i < this.filters.length; i++) {
             const storedFilter = this.filters[i];
-            if (storedFilter.display === null) {
+            // @ts-ignore
+            if (storedFilter['type'] === 'checkbox' || storedFilter['type'] === 'dataselect') {
                 this.filters.splice(i, 1)
                 i--;
             }
@@ -1015,7 +1031,7 @@ export abstract class DataproviderBase {
             }
 
             if (operator !== undefined && operator !== null) {
-                const filter = new Filter(checkbox.name, operator, value);
+                const filter = new Filter('checkbox', checkbox.name, operator, value);
                 filters.push(filter);
             }
         }

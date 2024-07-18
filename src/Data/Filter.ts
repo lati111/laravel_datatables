@@ -1,4 +1,6 @@
 export class Filter {
+    public readonly type: string;
+
     /** @type {HTMLElement|null} The element this filter uses as it's display */
     public displayElement: HTMLElement|null = null;
 
@@ -14,7 +16,8 @@ export class Filter {
     /** @type {string|null} The value used in the filter */
     public readonly value: string|null;
 
-    public constructor(filter:string, operator:string, value:string|null = null, display:string|null = null) {
+    public constructor(type:string, filter:string, operator:string, value:string|null = null, display:string|null = null) {
+        this.type = type;
         this.display = display;
         this.filter = filter;
         this.operator = operator;

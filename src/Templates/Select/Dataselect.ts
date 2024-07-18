@@ -24,6 +24,12 @@ export class DataSelect extends AbstractDataproviderTemplate {
     protected optionCls:string = '';
     protected optionContentCls:string = '';
 
+    /** @type {Function|null} An event triggered on selecting an item. Passes the dataprivder, identifier and label as parameters */
+    public onItemSelectEvent: Function|null = null;
+
+    /** @type {Function|null} An event triggered on clearing the dataselect. Passes the dataprivder as a parameter */
+    public onClearEvent: Function|null = null;
+
     /** @inheritDoc */
     protected setup(): void {
         super.setup();
@@ -46,6 +52,13 @@ export class DataSelect extends AbstractDataproviderTemplate {
         }
 
         this.collapseButton.addEventListener('click', this.collapseEvent.bind(this));
+
+        // clear button
+        const clearButtonId = this.dataprovider.getAttribute('data-clear-button-id') ?? this.dataproviderID+'-clear-button';
+        const clearButton = document.querySelector('#' + clearButtonId);
+        if (clearButton !== null) {
+            clearButton.addEventListener('click', this.reset.bind(this));
+        }
 
         //check identifiers
         if (this.itemIdentifierKey === null) {
@@ -121,7 +134,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
      * @param {Event} event The click event
      * @return void
      */
-    protected selectEvent(item: Element, event: Event) {
+    protected async selectEvent(item: Element, event: Event) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
@@ -130,6 +143,10 @@ export class DataSelect extends AbstractDataproviderTemplate {
         this.currentIdentifier = item.getAttribute('data-value') ?? this.currentIdentifier;
 
         this.collapseEvent();
+
+        if (this.onItemSelectEvent !== null) {
+            await this.onItemSelectEvent(this, this.currentIdentifier, this.currentLabel);
+        }
     }
 
     /**
@@ -204,6 +221,19 @@ export class DataSelect extends AbstractDataproviderTemplate {
         searchbar.value = this.defaultLabel;
         const dataprovider = this.dataprovider as HTMLInputElement;
         dataprovider.value = '';
+
+        if (this.onClearEvent !== null) {
+            this.onClearEvent(this);
+        }
+    }
+
+    public setSelectedItem(identifier:string, label:string) {
+        this.currentIdentifier = identifier;
+        this.currentLabel = label;
+
+        this.searchbarInput!.value = label;
+        (this.dataprovider as HTMLInputElement).value = identifier;
+        this.dataprovider.setAttribute('data-value', identifier);
     }
 
     /**
