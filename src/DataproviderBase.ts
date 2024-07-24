@@ -940,6 +940,9 @@ export abstract class DataproviderBase {
      */
     protected performLoadStoredFilterData(filter:{[key:string]:string}) {
         switch(filter['type']) {
+            case 'manual':
+                this.addManualFilter(filter['filter'], filter['operator'], filter['value'] ?? null, true);
+                break;
             case 'form':
                 if (filter['display'] !== undefined && filter['display'] !== null) {
                     this.addFilter(filter['display'], filter['filter'], filter['operator'], filter['value'] ?? null, true);
@@ -1569,6 +1572,31 @@ export abstract class DataproviderBase {
     }
 
     //| Public functions
+
+    /**
+     * Manually inserts a new filter in the filter array
+     * @param {string} filter The filter to add
+     * @param {string} operator The operator for the filter
+     * @param {string|null} value The filter value
+     * @param {boolean} init Whether or not it is run in init mode (disables events)
+     * @return {boolean} Whether or not this succeded
+     */
+
+    protected addManualFilter(filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
+        const filterItem = new Filter('manual', filter, operator, value);
+        this.filters.push(filterItem);
+        this.addFilterDisplay(filterItem)
+
+        if (init === false) {
+            if (this.filterAddedEvent !== null) {
+                this.filterAddedEvent(this, filterItem);
+            }
+    
+            this.load(true, false);
+        }
+
+        return true;
+    }
 
     /**
      * Sets the datalist to readonly mode. This adds the 'datalist-readonly' class to the datalist, and marks all elements with the 'data-item-readonly-sensitive' not already marked as readonly as readonly, or disabled depending on the type.
