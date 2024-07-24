@@ -1582,7 +1582,7 @@ export abstract class DataproviderBase {
      * @return {boolean} Whether or not this succeded
      */
 
-    protected addManualFilter(filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
+    public addManualFilter(filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
         const filterItem = new Filter('manual', filter, operator, value);
         this.filters.push(filterItem);
         this.addFilterDisplay(filterItem)
