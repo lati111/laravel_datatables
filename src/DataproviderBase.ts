@@ -781,7 +781,7 @@ export abstract class DataproviderBase {
      * @param {string} baseUrl The url before any query parameters are applied
      * @return {URL} Returns the generated URL
      */
-    protected generateDataUrl(baseUrl:string = this.url):URL {
+    public generateDataUrl(baseUrl:string = this.url):URL {
         let url = new URL(baseUrl);
 
         if (this.pagination !== null) {
