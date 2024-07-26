@@ -124,6 +124,8 @@ export abstract class DataproviderBase {
     public filterAddedEvent: Function|null = null;
 
     //| Event callbacks
+    /** @type {Function|null} An event triggered when loading is completed */
+    public onLoadFinishedEvent: Function|null = null;
     /** @type {Function|null} An event triggered when an item is created. Passes the dataprovider and the item as parameters. If the item is returned in the callback, the new item will be used */
     public onItemCreateEvent: Function|null = null;
     /** @type {Function|null} An event triggered when an inactive item is set as active. Passes the dataprovider and the item as parameters. */
@@ -732,6 +734,11 @@ export abstract class DataproviderBase {
         // remarks as readonly if needed
         if (this.readonly) {
             this.applyReadonlyMode();
+        }
+
+        // fire event
+        if (this.onLoadFinishedEvent !== null) {
+            this.onLoadFinishedEvent(this)
         }
     }
 
