@@ -343,7 +343,7 @@ export class Datatable extends AbstractDatalistTemplate {
     //| Url operations
 
     /** @inheritDoc */
-    protected generateDataUrl(baseUrl:string = this.url): URL {
+    public generateDataUrl(baseUrl:string = this.url): URL {
         const url = super.generateDataUrl(baseUrl);
 
         const sortData = this.getSortData();
