@@ -32,51 +32,73 @@ export class DataCardList extends AbstractDatalistTemplate {
             const value = data[key];
 
             //set inputs
-            const input = item.querySelector(`input[name="${key}"]:not([type="checkbox"]), input[data-name="${key}"]:not([type="checkbox"])`) as HTMLInputElement|null
-            if (input !== null) {
-                input.value = value;
+            const inputs = item.querySelectorAll(`input[name="${key}"]:not([type="checkbox"]), input[data-name="${key}"]:not([type="checkbox"])`) as NodeListOf<HTMLInputElement>;
+            for (let i = 0; i < inputs.length; i++) {
+                const input = inputs[i];
+                if (input !== null) {
+                    input.value = value;
+                }
             }
 
             //set checkboxes
-            const checkbox = item.querySelector(`input[name="${key}"][type="checkbox"], input[data-name="${key}"][type="checkbox"]`) as HTMLInputElement|null
-            if (checkbox !== null && (value === true || value === 'true' || value == 1)) {
-                checkbox.checked = true;
+            const checkboxes = item.querySelectorAll(`input[name="${key}"][type="checkbox"], input[data-name="${key}"][type="checkbox"]`) as NodeListOf<HTMLInputElement>;
+            for (let i = 0; i < checkboxes.length; i++) {
+                const checkbox = checkboxes[i];
+                if (checkbox !== null && (value === true || value === 'true' || value == 1)) {
+                    checkbox.checked = true;
+                }
             }
 
+
             //set textarea
-            const textarea = item.querySelector(`textarea[name="${key}"], textarea[data-name="${key}"]`) as HTMLTextAreaElement|null
-            if (textarea !== null) {
-                textarea.textContent = value;
+            const textareas = item.querySelectorAll(`textarea[name="${key}"], textarea[data-name="${key}"]`) as NodeListOf<HTMLTextAreaElement>;
+            for (let i = 0; i < textareas.length; i++) {
+                const textarea = textareas[i];
+                if (textarea !== null) {
+                    textarea.textContent = value;
+                }
             }
 
             //set select
-            const select = item.querySelector(`select[name="${key}"], select[data-name="${key}"]`) as HTMLSelectElement|null
-            if (select !== null && value !== null) {
-                const option = select.querySelector(`option[value="${value}"]`) as HTMLOptionElement|null;
-                if (option === null) {
-                    throw new DatalistLoadingError(`Option with value "${value}" does not exist on select "${value}"`, this.errorCallback)
-                }
+            const selects = item.querySelectorAll(`select[name="${key}"], select[data-name="${key}"]`) as NodeListOf<HTMLSelectElement>;
+            for (let i = 0; i < selects.length; i++) {
+                const select = selects[i];
+                if (select !== null && value !== null) {
+                    const option = select.querySelector(`option[value="${value}"]`) as HTMLOptionElement|null;
+                    if (option === null) {
+                        throw new DatalistLoadingError(`Option with value "${value}" does not exist on select "${value}"`, this.errorCallback)
+                    }
 
-                select.querySelector(`option`)?.removeAttribute('selected');
-                option.setAttribute('selected', 'selected');
+                    select.querySelector(`option`)?.removeAttribute('selected');
+                    option.setAttribute('selected', 'selected');
+                }
             }
 
             //set spans
-            const span = item.querySelector(`span[name="${key}"], span[data-name="${key}"]`) as HTMLSpanElement|null
-            if (span !== null) {
-                span.textContent = value;
+            const spans = item.querySelectorAll(`span[name="${key}"], span[data-name="${key}"]`) as NodeListOf<HTMLSpanElement>;
+            for (let i = 0; i < spans.length; i++) {
+                const span = spans[i];
+                if (span !== null) {
+                    span.textContent = value;
+                }
             }
 
             //set img
-            const img = item.querySelector(`img[name="${key}"], img[data-name="${key}"]`) as HTMLImageElement|null
-            if (img !== null) {
-                img.src = value;
+            const imgs = item.querySelectorAll(`img[name="${key}"], img[data-name="${key}"]`) as NodeListOf<HTMLImageElement>;
+            for (let i = 0; i < imgs.length; i++) {
+                const img = imgs[i];
+                if (img !== null) {
+                    img.src = value;
+                }
             }
 
             //set img alt
-            const imgAlt = item.querySelector(`img[data-alt-name="${key}"]`) as HTMLImageElement|null
-            if (imgAlt !== null) {
-                imgAlt.alt = value;
+            const imgAlts = item.querySelectorAll(`img[data-alt-name="${key}"]`) as NodeListOf<HTMLImageElement>;
+            for (let i = 0; i < imgAlts.length; i++) {
+                const img = imgAlts[i];
+                if (img !== null) {
+                    img.alt = value;
+                }
             }
 
             //show hidden elements
@@ -107,7 +129,7 @@ export class DataCardList extends AbstractDatalistTemplate {
                 }
             }
 
-            const miscClasses = item.querySelectorAll(`[data-add-class-is-true-name="${key}"]`) as NodeListOf<Element>;
+            const miscClasses = item.querySelectorAll(`[data-add-class-if-true-name="${key}"]`) as NodeListOf<Element>;
             for (let i = 0; i < miscClasses.length; i++) {
                 const miscClass = miscClasses[i];
                 const addableClass = miscClass.getAttribute('data-class-to-add');
