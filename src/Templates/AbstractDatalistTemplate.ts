@@ -144,7 +144,8 @@ export abstract class AbstractDatalistTemplate extends AbstractDataproviderTempl
             }
 
             const value = this.valueDataSelect.getSelectedItem();
-            const displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
+            const label = this.valueDataSelect.getSelectedLabel();
+            const displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + label;
             this.addFilter(displayString, filter, operator, value)
         }
     }
