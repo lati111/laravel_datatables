@@ -103,7 +103,7 @@ export abstract class DataproviderBase {
 
     //| Filter properties
     /** @type {Array} The array container the currently active filters */
-    protected filters: Array<Filter> = [];
+    public filters: Array<Filter> = [];
 
     /** @type {HTMLElement|null} The form used to set filters */
     protected filterForm: HTMLElement|null = null;
