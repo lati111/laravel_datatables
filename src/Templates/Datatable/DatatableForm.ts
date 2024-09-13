@@ -92,7 +92,7 @@ export class DatatableForm extends Datatable {
                 continue;
             }
 
-            row.append(column.createCell(data[key] ?? null));
+            row.append(column.createCell(data ?? {}));
         }
 
         row = this.addSaveButton(row);

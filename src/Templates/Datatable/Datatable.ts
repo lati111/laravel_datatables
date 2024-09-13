@@ -396,7 +396,7 @@ export class Datatable extends AbstractDatalistTemplate {
         for (key in data) {
             if (key in this.columns) {
                 const column = this.columns[key];
-                rowData[column.index] = column.createCell((data[key] ?? '').toString());
+                rowData[column.index] = column.createCell(data ?? {});
             }
         }
 
@@ -407,7 +407,7 @@ export class Datatable extends AbstractDatalistTemplate {
                 let key: keyof typeof this.columns;
                 for (key in this.columns) {
                     if (this.columns[key].index === i) {
-                        row.append(this.columns[key].createCell(''));
+                        row.append(this.columns[key].createCell({}));
                     }
                 }
 

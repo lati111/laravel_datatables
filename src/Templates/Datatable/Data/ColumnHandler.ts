@@ -2,9 +2,9 @@ export class ColumnHandler {
     public setter: Function|null = null;
     public getter: Function|null = null;
 
-    public set(element: Element, value: any): any {
+    public set(element: Element, value: any, data:{[key:string]:any} = {}): any {
         if (this.setter !== null) {
-            return this.setter(element, value);
+            return this.setter(element, value, data);
         }
 
         return (element as HTMLInputElement).value = value;

@@ -28,9 +28,15 @@ export class Column {
 
     /**
      * Creates a cell for a column according to the parameters
-     * @param value The value for this cell
+     * @param {Array} data The data array
      */
-    public createCell(value:string|null): HTMLTableCellElement {
+    public createCell(data:{[key:string]:any} = {}): HTMLTableCellElement {
+        if (Object.keys(data).includes(this.name) === false) {
+            data[this.name] = null;
+        }
+
+        let value = data[this.name]
+
         const td = document.createElement('td');
         td.setAttribute('data-column', this.name);
         td.classList.value = this.cellCls;
@@ -69,7 +75,7 @@ export class Column {
                 container.innerHTML = this.format;
             }
 
-            this.handler.set(td, value);
+            this.handler.set(td, value, data);
         } else if (this.format !== null) {
             // through format
             container.innerHTML = this.format.replace(/\[value]/gmi, value);
