@@ -17,7 +17,7 @@ import {AbstractDatalistTemplate} from "../AbstractDatalistTemplate";
 export class Datatable extends AbstractDatalistTemplate {
     //| Column properties
 
-    protected columns:{[key:string]: Column} = {};
+    public columns:{[key:string]: Column} = {};
     protected columnHandlers:{[key:string]: ColumnHandler} = {};
     protected sortableHeaders:NodeListOf<Element>|null = null;
 
@@ -100,13 +100,14 @@ export class Datatable extends AbstractDatalistTemplate {
      * @return void
      */
     private initColumns() {
-        const headers = this.dataprovider.querySelectorAll('thead th.datatable-header');
+        const headers = this.dataprovider.querySelectorAll('thead th.datatable-header') as NodeListOf<HTMLElement>;
 
         let index = 0;
         for (const header of headers) {
             const name = header.getAttribute('data-column')!;
             const column = new Column(name, index)
 
+            column.header = header;
             column.visible = (header.getAttribute('data-visible') ?? 'false') === 'true'
             column.format = header.getAttribute('data-format');
             column.default = header.getAttribute('data-default');

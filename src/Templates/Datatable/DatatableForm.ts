@@ -88,6 +88,7 @@ export class DatatableForm extends Datatable {
                     cell.classList.add('hidden')
                 }
 
+                cell.setAttribute('data-column', column.name)
                 row.append(cell)
                 continue;
             }

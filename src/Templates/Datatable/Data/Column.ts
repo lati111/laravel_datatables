@@ -10,6 +10,7 @@
 import {ColumnHandler} from "./ColumnHandler";
 
 export class Column {
+    public header:HTMLElement|null = null;
     public name:string;
     public index:number;
     public size:number|null = null;
@@ -91,5 +92,35 @@ export class Column {
 
         // return td with wrapper
         return td;
+    }
+
+    /**
+     * Show this column
+     */
+    public show() {
+        this.visible = true;
+        if (this.header !== null) {
+            this.header.classList.remove('hidden')
+
+            const cells = this.header!.closest('table')!.querySelectorAll(`td[data-column="${this.name}"]`)
+            for (const cell of cells) {
+                cell.classList.remove('hidden');
+            }
+        }
+    }
+
+    /**
+     * Hide this column
+     */
+    public hide() {
+        this.visible = false;
+        if (this.header !== null) {
+            this.header.classList.add('hidden')
+
+            const cells = this.header!.closest('table')!.querySelectorAll(`td[data-column="${this.name}"]`)
+            for (const cell of cells) {
+                cell.classList.add('hidden');
+            }
+        }
     }
 }
