@@ -29,8 +29,8 @@ export abstract class AbstractDatalistTemplate extends AbstractDataproviderTempl
         const filterDataSelectKeys = Object.keys(this.filterDataSelects);
         for (let i = 0; i < filterDataSelectKeys.length; i++) {
             const dataselect = this.filterDataSelects[filterDataSelectKeys[i]] as DataSelect;
-            dataselect.onItemSelectEvent = this.load.bind(this, true);
-            dataselect.onClearEvent = this.load.bind(this, true);
+            dataselect.onItemSelectEvent = this.load.bind(this, true, false);
+            dataselect.onClearEvent = this.load.bind(this, true, false);
             await dataselect.init();
         }
 
