@@ -374,6 +374,13 @@ export abstract class DataproviderBase {
             checkbox.addEventListener('change', this.load.bind(this, true, false))
         }
 
+        //inputs
+        const inputs = document.querySelectorAll('input.'+this.dataproviderID+'-filter-input:not([type="checkbox"])') as NodeListOf<HTMLInputElement>
+        for (let i = 0; i < inputs.length; i++) {
+            const input = inputs[i];
+            input.addEventListener('blur', this.load.bind(this, true, false))
+        }
+
         // setup form
         const filterFormId = this.dataprovider.getAttribute('data-filter-form-id') ?? this.dataproviderID + '-filter-form'
         this.filterForm = document.querySelector('#'+filterFormId);
@@ -970,6 +977,17 @@ export abstract class DataproviderBase {
                     filterCheckbox.checked = true;
                 }
                 break;
+            case 'input':
+                const filterInput = document.querySelector('input[name="'+filter['filter']+'"].'+this.dataproviderID+'-filter-input:not([type="checkbox"])') as HTMLInputElement|null;
+                if (filterInput === null) {
+                    return;
+                }
+
+                filterInput.value = filter['value'];
+                if (filter['value'] !== '' && filter['value'] !== null) {
+
+                }
+                break;
         }
     }
 
@@ -1017,7 +1035,7 @@ export abstract class DataproviderBase {
         for (let i = 0; i < this.filters.length; i++) {
             const storedFilter = this.filters[i];
             // @ts-ignore
-            if (storedFilter['type'] === 'checkbox' || storedFilter['type'] === 'dataselect') {
+            if (storedFilter['type'] === 'checkbox' || storedFilter['type'] === 'input' || storedFilter['type'] === 'dataselect') {
                 this.filters.splice(i, 1)
                 i--;
             }
@@ -1025,7 +1043,7 @@ export abstract class DataproviderBase {
 
         const filters: Array<Filter> = this.filters;
 
-        //checkbox filters
+        // Checkbox filters
         const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
         for (let i = 0; i < checkboxes.length; i++) {
             const checkbox = checkboxes[i];
@@ -1042,6 +1060,26 @@ export abstract class DataproviderBase {
 
             if (operator !== undefined && operator !== null) {
                 const filter = new Filter('checkbox', checkbox.name, operator, value);
+                filters.push(filter);
+            }
+        }
+
+        // Input filters
+        const inputs = document.querySelectorAll('input.'+this.dataproviderID+'-filter-input:not([type="checkbox"])') as NodeListOf<HTMLInputElement>
+        for (let i = 0; i < inputs.length; i++) {
+            const input = inputs[i];
+            let value: string|null = input.value;
+            let operator;
+
+            if (value !== null && value !== "") {
+                operator = input.getAttribute('data-filled-operator') ?? undefined;
+            } else {
+                operator = input.getAttribute('data-empty-operator') ?? undefined;
+                value = input.getAttribute('data-empty-value') ?? null;
+            }
+
+            if (operator !== undefined && operator !== null) {
+                const filter = new Filter('input', input.name, operator, value);
                 filters.push(filter);
             }
         }

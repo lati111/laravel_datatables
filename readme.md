@@ -3,40 +3,43 @@ Laravel dataproviders readme
 Laravel dataprovider receivers is a collection of extendable scripts and templates designed to interact with the [Laravel dataproviders](https://github.com/lati111/laravel_dataproviders) composer package.
 
 <!-- TOC -->
-* [Laravel dataproviders readme](#laravel-dataproviders-readme)
-  * [Usage](#usage)
-    * [Using a dataprovider](#using-a-dataprovider)
-      * [Using dynamic urls](#using-dynamic-urls)
-      * [Adding new (empty) items to the datalist](#adding-new-empty-items-to-the-datalist)
-      * [Using readonly mode](#using-readonly-mode)
-      * [Using activity toggles](#using-activity-toggles)
-      * [Using filtering](#using-filtering)
-      * [Using events](#using-events)
-      * [Custom error handler](#custom-error-handler)
-    * [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
-      * [Adding new functions](#adding-new-functions)
-    * [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
-      * [Creating a searchbar](#creating-a-searchbar)
-      * [Creating the pagination](#creating-the-pagination)
-      * [Creating a load indicator](#creating-a-load-indicator)
-  * [Templates](#templates)
-    * [Datatable](#datatable)
-      * [Creating a datatable](#creating-a-datatable)
-        * [Creating datatable columns](#creating-datatable-columns)
-        * [Custom handlers for columns](#custom-handlers-for-columns)
-        * [Additional rows](#additional-rows)
-      * [Using the filter form](#using-the-filter-form)
-    * [Datatable selector](#datatable-selector)
-      * [Creating a datatable selector](#creating-a-datatable-selector)
-      * [Using a datatable selector](#using-a-datatable-selector)
-        * [Events](#events)
-    * [DatatableForm](#datatableform)
-      * [Creating a datatable form](#creating-a-datatable-form)
-      * [Custom save handler](#custom-save-handler)
-    * [DataCardList](#datacardlist)
-    * [Dataselect](#dataselect)
-      * [Creating a dataselect](#creating-a-dataselect)
-  * [Requirements](#requirements)
+- [Laravel dataproviders readme](#laravel-dataproviders-readme)
+  - [Usage](#usage)
+    - [Using a dataprovider](#using-a-dataprovider)
+      - [Using dynamic urls](#using-dynamic-urls)
+      - [Adding new (empty) items to the datalist](#adding-new-empty-items-to-the-datalist)
+      - [Using readonly mode](#using-readonly-mode)
+      - [Using activity toggles](#using-activity-toggles)
+      - [Using filtering](#using-filtering)
+        - [Filter checkboxes](#filter-checkboxes)
+        - [Filter dataselect](#filter-dataselect)
+        - [Filter inputs](#filter-inputs)
+      - [Using events](#using-events)
+      - [Custom error handler](#custom-error-handler)
+    - [Creating a custom dataprovider script (TS)](#creating-a-custom-dataprovider-script-ts)
+      - [Adding new functions](#adding-new-functions)
+    - [Creating a dataprovider in HTML](#creating-a-dataprovider-in-html)
+      - [Creating a searchbar](#creating-a-searchbar)
+      - [Creating the pagination](#creating-the-pagination)
+      - [Creating a load indicator](#creating-a-load-indicator)
+  - [Templates](#templates)
+    - [Datatable](#datatable)
+      - [Creating a datatable](#creating-a-datatable)
+        - [Creating datatable columns](#creating-datatable-columns)
+        - [Custom handlers for columns](#custom-handlers-for-columns)
+        - [Additional rows](#additional-rows)
+      - [Using the filter form](#using-the-filter-form)
+    - [Datatable selector](#datatable-selector)
+      - [Creating a datatable selector](#creating-a-datatable-selector)
+      - [Using a datatable selector](#using-a-datatable-selector)
+        - [Events](#events)
+    - [DatatableForm](#datatableform)
+      - [Creating a datatable form](#creating-a-datatable-form)
+      - [Custom save handler](#custom-save-handler)
+    - [DataCardList](#datacardlist)
+    - [Dataselect](#dataselect)
+      - [Creating a dataselect](#creating-a-dataselect)
+  - [Requirements](#requirements)
 <!-- TOC -->
 
 ## Usage
@@ -79,11 +82,24 @@ This state can also be easily toggled by assigning the activity key as a name to
 Toggling the activity state in this way triggers the `onItemEnableEvent` and `onItemDisableEvent` event callbacks, if any are given. These callbacks return the dataprovider instance and the specific item that was toggled.
 
 #### Using filtering
-The dataproviders also contain a dynamic filtering system, and support for that has been built into the receivers as well. You may add your own filters by implementing them through `getFilters()`. By default the option for filter checkboxes is also built in. If a checkbox has the `{dataproviderID}-filter-checkbox` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
+The dataproviders also contain a dynamic filtering system, and support for that has been built into the receivers as well. You may add your own filters by implementing them through `getFilters()`. 
+
+##### Filter checkboxes
+If a checkbox has the `{dataproviderID}-filter-checkbox` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
 - `data-checked-operator`: The operator to pass to the filter when this element is checked, as declared in the filter.
 - `data-checked-value`: The value to filter on passed to the filter when this element is checked.
 - `data-unchecked-operator`: The operator to pass to the filter when this element is unchecked, as declared in the filter.
 - `data-unchecked-value`: The value to filter on passed to the filter when this element is unchecked.
+
+##### Filter dataselect
+If a dataselect has the `{dataproviderID}-data-filter-select` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
+- `data-operator`: The operator to use for this filter.
+
+##### Filter inputs
+If an input element has the `{dataproviderID}-filter-input` class, where dataproviderID is the ID of the dataprovider, it will be automatically added as a filter. The `name` attribute must match the name of the filter you want to use. To declare what should be filtered on, you can add the following attributes:
+- `data-filled-operator`: The operator to pass to the filter when the input value is not empty, as declared in the filter.
+- `data-empty-operator`: The operator to pass to the filter when the input value is unset, as declared in the filter.
+- `data-empty-value`: The value to filter on passed to the filter when the input value is unset.
 
 #### Using events
 The datalists also have a number of available events that you can call **before** initialization of the datalist. These events are triggered at certain points, allowing you to inject code into the datalist without having to create a whole new class for it. Below follows a list of events.
