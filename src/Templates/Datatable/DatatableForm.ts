@@ -17,7 +17,10 @@ export class DatatableForm extends Datatable {
     protected saveUrlTemplate: string = '';
     public saveHandler: Function|null = null;
 
+    public addsNewRow: boolean = true;
+
     protected emptyRowWhiteList: string[] = [];
+    protected isEditableColumn: string|null = null;
     protected buttonColumn: string|null = null;
 
     protected saveButtonContent: string = '<span>Save</span>';
@@ -28,6 +31,8 @@ export class DatatableForm extends Datatable {
         super.setup();
 
         this.emptyBody = '';
+
+        this.isEditableColumn = this.dataprovider.getAttribute('data-is-editable-column');
 
         // save url
         const saveUrl = this.dataprovider.getAttribute('data-save-url');
@@ -71,7 +76,9 @@ export class DatatableForm extends Datatable {
     public async load(shouldResetPagination: boolean = false) {
         await super.load(shouldResetPagination);
 
-        this.addNewItem();
+        if (this.addsNewRow) {
+            super.addNewItem();
+        }
     }
 
     /** Generated an unfilled row for the table */
@@ -103,8 +110,11 @@ export class DatatableForm extends Datatable {
     /** @inheritDoc */
     protected createItem(data:{[key:string]:any}): HTMLElement {
         let row = super.createItem(data);
-        row = this.addSaveButton(row);
 
+        if (this.isEditableColumn === null || data[this.isEditableColumn] === true) {
+            row = this.addSaveButton(row);
+        }
+        
         return row;
     }
 

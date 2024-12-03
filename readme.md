@@ -590,9 +590,12 @@ The datatable selector class has a number of events that can be used for greater
 ### DatatableForm
 The `DatatableForm` class is a variant of the `Datatable` class that allows for the editing and saving of rows without needing to open a secondary window. This works by adding a save button which saves all the inputs in the row, and by always adding an empty row at the top to add new items through. 
 
+After creating the object, you can use the `addsNewRow` property to determine if empty rows should automatically be added on loading. True by default.
+
 #### Creating a datatable form
 Creating a datatable form is almost identical to creating a regular datatable, as most of the differences are handled inside the class itself. There are however, a few more attributes, both optional and required. 
 - `data-save-url`: The url where the data should be posted to when clicking on the save button. Is required and is compatible with the dynamic option.
+- `data-is-editable-column`: The column id of a column containing a boolean. This boolean determines if the row should have a save button.
 - `data-button-column`: The column id if you have a column you would like to add the save button to, instead of creating a new column for it.
 - `data-empty-row-whitelist`: A whitelist of column that should be filled instead of kept blank. Seperated by `,`. If not set all columns are allowed
 - `data-button-header-cls`: The classes that should be added to the button column header. Only works if `data-button-column` is not set.
