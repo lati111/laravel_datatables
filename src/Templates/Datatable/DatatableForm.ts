@@ -77,7 +77,7 @@ export class DatatableForm extends Datatable {
         await super.load(shouldResetPagination);
 
         if (this.addsNewRow) {
-            super.addNewItem();
+            this.addNewItem();
         }
     }
 
