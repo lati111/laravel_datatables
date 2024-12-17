@@ -13,7 +13,7 @@ import {Item} from "./Data/Item";
 
 export class DatatableSelector extends Datatable {
     protected selectList: Element | null = null;
-    protected selectedItems:{[key: string]: Item} = {};
+    public selectedItems:{[key: string]: Item} = {};
     protected selectionUrl: string | null = null;
     protected selectionUrlTemplate: string | null = null;
 

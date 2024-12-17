@@ -258,7 +258,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
     }
 
     /** @inheritDoc */
-    protected generateDataUrl(baseUrl: string = this.url): URL {
+    public generateDataUrl(baseUrl: string = this.url): URL {
         const url = super.generateDataUrl(baseUrl);
         url.searchParams.set('offset', "" + this.body.children.length);
 

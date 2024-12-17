@@ -1,4 +1,3 @@
-import {DataproviderBase} from "../DataproviderBase";
 import {AbstractDataproviderTemplate} from "./AbstractDataproviderTemplate";
 import {DataSelect} from "./Select/Dataselect";
 import {DatalistConstructionError} from "../Exceptions/DatalistConstructionError";
