@@ -123,6 +123,11 @@ export abstract class DataproviderBase {
     /** @type {Function|null} The event function called after an event is added. Passes dataprovider and filter */
     public filterAddedEvent: Function|null = null;
 
+    //| Custom selection priperties
+
+    /** @type {{[key:string]: string}} An associative array  */
+    public customSelectProperties: {[key:string]: boolean} = {}
+
     //| Event callbacks
     /** @type {Function|null} An event triggered when loading is completed */
     public onLoadFinishedEvent: Function|null = null;
@@ -803,6 +808,17 @@ export abstract class DataproviderBase {
         const filterData = this.getStorableFilterData();
         if (filterData !== null) {
             url.searchParams.set('filters', JSON.stringify(filterData));
+        }
+
+        if (Object.keys(this.customSelectProperties).length > 0) {
+            let columnString = '';
+            for (let i = 0; i < Object.keys(this.customSelectProperties).length; i++) {
+                const column = Object.keys(this.customSelectProperties)[i];
+                const value = this.customSelectProperties[column];
+                columnString += (i === 0 ? '' : ',')+`${column}=`+(value ? '1' : '0');
+            }
+
+            url.searchParams.set('columns', columnString);
         }
 
         return url;
@@ -1626,7 +1642,6 @@ export abstract class DataproviderBase {
      * @param {boolean} init Whether or not it is run in init mode (disables events)
      * @return {boolean} Whether or not this succeded
      */
-
     public addManualFilter(filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
         const filterItem = new Filter('manual', filter, operator, value);
         this.filters.push(filterItem);
@@ -1641,6 +1656,21 @@ export abstract class DataproviderBase {
         }
 
         return true;
+    }
+
+    /**
+     * Set the custom select property to a certain value
+     * @param {string} column The name of the custom to set a custom value for
+     * @param {boolean|null} show The custom value to set it for. When a boolean is set the default is used
+     */
+    public setCustomSelect(column: string, show: boolean|null) {
+        if (column in this.customSelectProperties) {
+            delete this.customSelectProperties[column];
+        }
+
+        if (show !== null) {
+            this.customSelectProperties[column] = show;
+        }
     }
 
     /**
