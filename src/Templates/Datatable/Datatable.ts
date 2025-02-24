@@ -408,7 +408,7 @@ export class Datatable extends AbstractDatalistTemplate {
                 let key: keyof typeof this.columns;
                 for (key in this.columns) {
                     if (this.columns[key].index === i) {
-                        row.append(this.columns[key].createCell({}));
+                        row.append(this.columns[key].createCell(data ?? {}));
                     }
                 }
 
