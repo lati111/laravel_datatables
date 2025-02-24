@@ -376,21 +376,7 @@ export class Datatable extends AbstractDatalistTemplate {
         const rowData:{[key: number]:HTMLTableCellElement} = {};
 
         if (this.selectionModeIsEnabled) {
-            const td = document.createElement('td');
-            const checkbox = document.createElement('input');
-            checkbox.setAttribute('data-id', data[this.itemIdentifierKey!]);
-            checkbox.classList.add('data-item-readonly-sensitive');
-            checkbox.name = 'selection-checkbox'
-            checkbox.type = 'checkbox';
-            td.append(checkbox);
-
-            const item = new Item(data[this.itemIdentifierKey!], data[this.itemLabelKey!])
-            if (data[this.itemIdentifierKey!] in this.selectedItems) {
-                checkbox.checked = true;
-            }
-
-            checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
-            row.append(td);
+            row.prepend(this.createSelectionCheckbox(data));
         }
 
         let key: keyof typeof data;
@@ -419,6 +405,29 @@ export class Datatable extends AbstractDatalistTemplate {
         }
 
         return row;
+    }
+
+    /**
+     * Create the cell containing the selection checkbox
+     * @param data The associative array with data
+     * @returns The generated selection checkbox cell
+     */
+    protected createSelectionCheckbox(data:{[key:string]:any}): HTMLTableCellElement {
+        const td = document.createElement('td');
+        const checkbox = document.createElement('input');
+        checkbox.setAttribute('data-id', data[this.itemIdentifierKey!]);
+        checkbox.classList.add('data-item-readonly-sensitive');
+        checkbox.name = 'selection-checkbox'
+        checkbox.type = 'checkbox';
+        td.append(checkbox);
+
+        const item = new Item(data[this.itemIdentifierKey!], data[this.itemLabelKey!])
+        if (data[this.itemIdentifierKey!] in this.selectedItems) {
+            checkbox.checked = true;
+        }
+
+        checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
+        return td;
     }
 
     //| Public methods
