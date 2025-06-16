@@ -1,5 +1,6 @@
 import {DatalistConstructionError} from "./Exceptions/DatalistConstructionError";
 import {DataOperationsModule} from "./Modules/DataOperationsModule";
+import {CoreSettings} from "./Settings/CoreSettings";
 
 export abstract class DatalistCore {
     //| Core properties
@@ -17,11 +18,7 @@ export abstract class DatalistCore {
     public urls: {[key: string]: string} = {};
 
     /** An array containing the settings for the datalist */
-    public settings: {[key: string]: string|number|boolean} = {
-        "empty_body_string": "No results",
-        "hide_body_during_loading": false,
-        "history": true,
-    }
+    public settings: CoreSettings = new CoreSettings();
 
     //| Event callbacks
 
