@@ -46,7 +46,7 @@ export abstract class DatalistCore {
      * @param dataprovider The dataprovider element or the ID of that element.
      * @param body The body element or the ID of that element. If none are given, {dataproviderID}-body is assumed to be the ID.
      */
-    public constructor(dataprovider: Element|string, body: Element|string|null = null) {
+    protected constructor(dataprovider: Element|string, body: Element|string|null = null) {
         // Setup dataprovider
         if (typeof dataprovider === 'string') {
             const dataproviderByID = document.querySelector('#'+dataprovider);
@@ -95,6 +95,11 @@ export abstract class DatalistCore {
     public async dataLoad(shouldResetPagination: boolean = false, keepContents: boolean = false) {
         let url = this.urls['data'];
 
+        // Hide the body if `hide body during loading` setting is enabled
+        if (this.settings.hide_body_during_loading) {
+            this.datalistBody.classList.add('hidden');
+        }
+
         // Pre load callback
         if (this.preLoadCallback !== null) {
             const updatedUrl = this.preLoadCallback(this, url);
@@ -104,7 +109,7 @@ export abstract class DatalistCore {
         }
 
         // Load the data
-        let data = await this.dataModule.getData(this.urls['data']);
+        let data = await this.dataModule.getData(url);
 
         // Post load callback
         if (this.postLoadCallback !== null) {
@@ -124,6 +129,11 @@ export abstract class DatalistCore {
 
         if (empty && !keepContents) {
             this.datalistBody.innerHTML = (this.settings['empty_body_string'] as string);
+        }
+
+        // Show the body again if `hide body during loading` setting is enabled
+        if (this.settings.hide_body_during_loading) {
+            this.datalistBody.classList.remove('hidden');
         }
     }
 
@@ -155,6 +165,14 @@ export abstract class DatalistCore {
     protected abstract createItem(data:{[key:string]:any}): HTMLElement;
 
     //| Getters
+
+    /**
+     * Get the overarching container element.
+     * This is the container if one is set, and the datalist element otherwise.
+     */
+    public getOverarchingContainer(): Element {
+        return this.datalistElement;
+    }
 
     /**
      * Get the core datalist element of a datalist.
