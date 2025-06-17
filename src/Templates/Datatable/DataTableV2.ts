@@ -9,6 +9,12 @@ export class DataTableV2 extends DatalistCore {
     /** The array containing the column for this datatable */
     public columns:{[key:string]: Column} = {};
 
+    /** The function that creates a prefix row. If no element is returned no row is inserted. */
+    public prefixRowCreator: Function|null = null;
+
+    /** The function that creates a suffix row. If no element is returned no row is inserted. */
+    public suffixRowCreator: Function|null = null;
+
     /**
      * @inherit
      * Obtain all headers with the .datatable-header class and convert them to columns.
@@ -24,6 +30,34 @@ export class DataTableV2 extends DatalistCore {
             const name = header.getAttribute('data-column')!;
             this.columns[name] = new Column(header, index);
             index++;
+        }
+    }
+
+    /**| Items */
+
+    /** @inheritDoc */
+    public addItem(data:{[key:string]:any}): void {
+        // Add prefix row
+        if (this.prefixRowCreator !== null) {
+            const prefixRow = this.prefixRowCreator(data) as HTMLTableRowElement|null;
+            if (prefixRow !== null) {
+                if (prefixRow.tagName === 'TR') {
+                    this.datalistBody.append(prefixRow)
+                }
+            }
+        }
+
+        // Add row
+        super.addItem(data);
+
+        // Add suffix row
+        if (this.suffixRowCreator !== null) {
+            const suffixRow = this.suffixRowCreator(data) as HTMLTableRowElement|null;
+            if (suffixRow !== null) {
+                if (suffixRow.tagName === 'TR') {
+                    this.datalistBody.append(suffixRow)
+                }
+            }
         }
     }
 
