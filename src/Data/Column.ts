@@ -116,14 +116,16 @@ export class Column {
             this.setter(td, value, data);
         } else if (this.template !== null) {
             // through format
-            container.append(this.template.cloneNode(true) as HTMLElement);
+            const cellContents = this.template.cloneNode(true) as HTMLElement;
+            container.append(cellContents);
+            cellContents.id = '';
 
-            const inputs = document.querySelectorAll('input.contains-value') as NodeListOf<HTMLInputElement>;
+            const inputs = container.querySelectorAll('input.contains-value') as NodeListOf<HTMLInputElement>;
             for (const input of inputs) {
                 input.value = value;
             }
 
-            const textareas = document.querySelectorAll('textarea.contains-value') as NodeListOf<HTMLTextAreaElement>;
+            const textareas = container.querySelectorAll('textarea.contains-value') as NodeListOf<HTMLTextAreaElement>;
             for (const textarea of textareas) {
                 textarea.textContent = value;
             }

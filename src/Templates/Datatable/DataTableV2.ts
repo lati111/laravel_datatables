@@ -1,6 +1,6 @@
 import {DataTableSettings} from "../../Settings/DataTableSettings";
-import {Column} from "../../Data/Column";
 import {DatalistCore} from "../../DatalistCore";
+import {Column} from "../../Data/Column";
 
 export class DataTableV2 extends DatalistCore {
     /** @inheritDoc */
@@ -65,6 +65,15 @@ export class DataTableV2 extends DatalistCore {
     protected createItem(data: { [p: string]: any }): HTMLElement {
         const row = document.createElement('tr');
         const rowData:{[key: number]:HTMLTableCellElement} = {};
+        let buttonsAdded = false;
+
+        let container: HTMLElement = row;
+        // TODO add form mode
+        // if (this.settings.isForm) {
+        //     const form = document.createElement('form');
+        //     row.append(form);
+        //     container = form
+        // }
 
         // Create cells for columns
         let key: keyof typeof data;
@@ -77,22 +86,38 @@ export class DataTableV2 extends DatalistCore {
 
         // Add cells to row in column order
         const length = Object.keys(this.columns).length;
-        for (let i = 0; i < length; i++) {
+        for (let i = 0; i <= length; i++) {
             if (!(i in rowData)) { // Find column if no value was set
                 let key: keyof typeof this.columns;
                 for (key in this.columns) {
                     if (this.columns[key].index === i) {
-                        row.append(this.columns[key].createCell(data ?? {}));
+                        container.append(this.columns[key].createCell(data ?? {}));
                     }
                 }
 
                 continue;
             }
 
-            row.append(rowData[i]);
+            container.append(rowData[i]);
         }
 
-        return row;
+        return container;
+    }
+
+    /**
+     * Creates a cell containing buttons for a row.
+     * @param isNew Whether this is a new uninstantiated row, or a regular data row
+     * @protected
+     */
+    protected createButtonCell(isNew: boolean) {
+        if ('buttons' in this.columns) {
+            console.log('nope')
+        }
+
+        const column = this.columns['buttons'];
+
+        const cell = document.createElement('td');
+
     }
 
 }
