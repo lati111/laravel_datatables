@@ -192,7 +192,7 @@ export class Datatable extends AbstractDatalistTemplate {
         let sortdir = header.getAttribute('data-sort-dir');
         const img = header.querySelector('img.sort-image') as HTMLImageElement|null;
         if (img === null) {
-            throw new DatalistError("Sort image undefined on header", this.errorCallback);
+            throw new DatalistError("Sort image undefined on header");
         }
 
         switch (sortdir) {
