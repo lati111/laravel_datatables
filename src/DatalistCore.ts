@@ -84,6 +84,10 @@ export abstract class DatalistCore {
         this.urls['pages'] = this.datalistElement.getAttribute('data-url-pages') ?? this.urls['data']+'/pages';
     }
 
+    public async init() {
+        await this.dataLoad();
+    }
+
     //| Data
 
     /**
@@ -93,23 +97,13 @@ export abstract class DatalistCore {
      * @param keepContents Keep the contents of the datalist body instead of removing it.
      */
     public async dataLoad(shouldResetPagination: boolean = false, keepContents: boolean = false) {
-        let url = this.urls['data'];
-
         // Hide the body if `hide body during loading` setting is enabled
         if (this.settings.hide_body_during_loading) {
             this.datalistBody.classList.add('hidden');
         }
 
-        // Pre load callback
-        if (this.preLoadCallback !== null) {
-            const updatedUrl = this.preLoadCallback(this, url);
-            if (updatedUrl !== null) {
-                url = updatedUrl;
-            }
-        }
-
         // Load the data
-        let data = await this.dataModule.getData(url);
+        let data = await this.dataModule.getData(this.generateDataUrl());
 
         // Post load callback
         if (this.postLoadCallback !== null) {
@@ -118,6 +112,12 @@ export abstract class DatalistCore {
                 data = updatedData;
             }
         }
+
+        // Empty the body unless told otherwise
+        if (!keepContents) {
+            this.datalistBody.innerHTML = '';
+        }
+
 
         // Display the items
         let empty = true;
@@ -135,6 +135,25 @@ export abstract class DatalistCore {
         if (this.settings.hide_body_during_loading) {
             this.datalistBody.classList.remove('hidden');
         }
+    }
+
+    protected generateDataUrl() {
+        let url = this.urls['data'];
+
+        // Pre load callback
+        if (this.preLoadCallback !== null) {
+            const updatedUrl = this.preLoadCallback(this, url);
+            if (updatedUrl !== null) {
+                url = updatedUrl;
+            }
+        }
+
+        return url;
+    }
+
+    protected applyParametersToUrl(baseUrl: string) {
+        let url = new URL(baseUrl);
+        return url;
     }
 
     //| Body manipulation

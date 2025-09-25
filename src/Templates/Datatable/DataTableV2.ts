@@ -1,6 +1,7 @@
 import {DataTableSettings} from "../../Settings/DataTableSettings";
 import {DatalistCore} from "../../DatalistCore";
 import {Column} from "../../Data/Column";
+import {PaginationModule} from "../../Modules/PaginationModule";
 
 export class DataTableV2 extends DatalistCore {
     /** @inheritDoc */
@@ -15,11 +16,14 @@ export class DataTableV2 extends DatalistCore {
     /** The function that creates a suffix row. If no element is returned no row is inserted. */
     public suffixRowCreator: Function|null = null;
 
+    /** The module handling data operations. */
+    public pagination = new PaginationModule(this);
+
     /**
      * @inherit
      * Obtain all headers with the .datatable-header class and convert them to columns.
      */
-    public constructor(dataprovider: Element|string, body: Element|string|null = null) {
+    public constructor(dataprovider: Element|string, body: Element|string|null = null, paginationElement: HTMLElement|null = null) {
         super(dataprovider, body);
 
         // Obtain column data
@@ -31,6 +35,34 @@ export class DataTableV2 extends DatalistCore {
             this.columns[name] = new Column(header, index);
             index++;
         }
+
+        // Setup pagination
+        if (paginationElement !== null) {
+            this.pagination.setPaginationElement(paginationElement);
+        } else {
+            this.pagination.createPaginationElement(this.datalistElement as HTMLElement);
+        }
+    }
+
+    /** @inheritDoc */
+    public async init() {
+        await this.dataLoad();
+    }
+
+    /**| Data */
+
+    /** @inheritDoc */
+    public async dataLoad(shouldResetPagination: boolean = false, keepContents: boolean = false) {
+        await super.dataLoad(shouldResetPagination, keepContents);
+
+        await this.pagination.drawPagination(this.dataModule, this.generateDataUrl(), this.settings.paginationSize)
+    }
+
+    protected applyParametersToUrl(baseUrl: string) {
+        let url = super.applyParametersToUrl(baseUrl);
+        url.searchParams.set('page', String(this.pagination.page))
+        url.searchParams.set('per_page', String(this.settings.itemsPerPage))
+        return url;
     }
 
     /**| Items */
