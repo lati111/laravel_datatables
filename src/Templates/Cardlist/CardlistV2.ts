@@ -23,10 +23,11 @@ export class CardlistV2 extends DatalistCore {
     protected createItem(data: { [p: string]: any }): HTMLElement {
         const card = this.template.cloneNode(true) as HTMLElement;
         card.style.visibility = 'visible';
+        card.classList.add('card')
+        card.id = '';
 
         for (const key in data) {
             const value = data[key];
-            console.log(key)
 
             //set inputs
             const inputs = card.querySelectorAll(`input[data-name="${key}"]:not([type="checkbox"])`) as NodeListOf<HTMLInputElement>;
