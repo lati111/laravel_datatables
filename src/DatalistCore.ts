@@ -110,6 +110,8 @@ export abstract class DatalistCore {
 
             this.paginationElement = div;
         }
+
+        this.initializePaginationElement();
     }
 
     public async init() {
