@@ -326,7 +326,7 @@ export abstract class DatalistCore {
             this.paginationElement?.querySelector('#right_navigator')?.removeAttribute('disabled');
         }
 
-        innerContainer.append(this.drawPaginationNode(this.page));
+        innerContainer.append(this.drawPaginationNode(this.page, true));
 
         for (let i = 1; i <= paginationSize; i++) {
             if (this.page - i >= 1) {
@@ -347,11 +347,15 @@ export abstract class DatalistCore {
         }
     }
 
-    protected drawPaginationNode(page: number) {
+    protected drawPaginationNode(page: number, currentPage: boolean = false) {
         const button = document.createElement('button');
         button.addEventListener('click', this.paginateTo.bind(this, page, false));
         button.classList.add('pagination-node');
         button.textContent = page.toString();
+
+        if (currentPage) {
+            button.classList.add('active');
+        }
 
         return button
     }
