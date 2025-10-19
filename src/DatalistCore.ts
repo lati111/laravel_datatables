@@ -305,7 +305,7 @@ export abstract class DatalistCore {
     }
 
     protected async drawPagination(dataModule: DataOperationsModule, url: string, paginationSize: number): Promise<any> {
-        this.maxPages = await dataModule.getData(url+'/pages');
+        this.maxPages = await dataModule.getData(this.urls['pages']);
         const innerContainer = this.paginationElement?.querySelector('#datalist-pagination-pages') as HTMLElement;
         innerContainer.innerHTML = '';
 
