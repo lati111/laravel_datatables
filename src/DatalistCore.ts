@@ -135,7 +135,8 @@ export abstract class DatalistCore {
         }
 
         // Load the data
-        let data = await this.dataModule.getData(this.generateDataUrl());
+        const url = this.applyParametersToUrl(this.generateDataUrl());
+        let data = await this.dataModule.getData(url.toString());
 
         // Post load callback
         if (this.postLoadCallback !== null) {
@@ -169,7 +170,7 @@ export abstract class DatalistCore {
         }
 
         // Setup pagination
-        await this.drawPagination(this.dataModule, this.generateDataUrl(), this.settings.paginationSize)
+        await this.drawPagination(this.dataModule, url.toString(), this.settings.paginationSize)
 
         this.datalistBody.removeAttribute('disabled');
     }
@@ -305,7 +306,7 @@ export abstract class DatalistCore {
     }
 
     protected async drawPagination(dataModule: DataOperationsModule, url: string, paginationSize: number): Promise<any> {
-        this.maxPages = await dataModule.getData(this.urls['pages']);
+        this.maxPages = await dataModule.getData(this.applyParametersToUrl(this.urls['pages']).toString());
         const innerContainer = this.paginationElement?.querySelector('#datalist-pagination-pages') as HTMLElement;
         innerContainer.innerHTML = '';
 
