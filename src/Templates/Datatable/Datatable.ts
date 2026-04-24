@@ -108,7 +108,7 @@ export class Datatable extends AbstractDatalistTemplate {
             const column = new Column(name, index)
 
             column.header = header;
-            column.visible = (header.getAttribute('data-visible') ?? 'false') === 'true'
+            column.visible = header.getAttribute('data-visible') !== 'false'
             column.format = header.getAttribute('data-format');
             column.default = header.getAttribute('data-default');
             column.cellCls = header.getAttribute('data-cell-cls') ?? '';

@@ -150,7 +150,7 @@ export abstract class DataproviderBase {
 
         const dataUrl = this.dataprovider.getAttribute('data-content-url');
         if (dataUrl === null) {
-            throw new DatalistConstructionError('Could not find attribute data-content-url on dataprovider with ID ' + dataUrl, this.errorCallback);
+            throw new DatalistConstructionError('Could not find attribute data-content-url on dataprovider with ID ' + this.dataproviderID, this.errorCallback);
         }
 
         const history = this.dataprovider.getAttribute('data-history');
@@ -277,7 +277,7 @@ export abstract class DataproviderBase {
 
         //content init
         const contentID = paginationElement.getAttribute('data-content-ID')
-        if (contentID !== undefined) {
+        if (contentID !== null) {
             const contentElement = document.querySelector('#'+contentID);
             if (contentElement !== null) {
                 this.paginationContent = contentElement
@@ -286,7 +286,7 @@ export abstract class DataproviderBase {
 
         //previous page button init
         const prevBtnID = paginationElement.getAttribute('data-previous-page-button-ID')
-        if (prevBtnID !== undefined) {
+        if (prevBtnID !== null) {
             const prevBtn = document.querySelector('#'+prevBtnID) as HTMLButtonElement|null;
             if (prevBtn !== null) {
                 prevBtn.addEventListener('click', this.pageChangeEvent.bind(this))
@@ -296,7 +296,7 @@ export abstract class DataproviderBase {
 
         //next page button init
         const nextBtnID = paginationElement.getAttribute('data-next-page-button-ID')
-        if (nextBtnID !== undefined) {
+        if (nextBtnID !== null) {
             const nextBtn = document.querySelector('#'+nextBtnID) as HTMLButtonElement|null;
             if (nextBtn !== null) {
                 nextBtn.addEventListener('click', this.pageChangeEvent.bind(this))
@@ -306,13 +306,13 @@ export abstract class DataproviderBase {
 
         //per page selector init
         const perpageSelectorID = paginationElement.getAttribute('data-perpage-selector-ID')
-        if (perpageSelectorID !== undefined) {
+        if (perpageSelectorID !== null) {
             const perpageSelector = document.querySelector('#'+perpageSelectorID) as HTMLSelectElement|null;
             if (perpageSelector !== null) {
                 perpageSelector.addEventListener('change', this.perPageChangeEvent.bind(this))
                 this.perpageSelector = perpageSelector
 
-                if (this.perpageSelector.value !== null) {
+                if (this.perpageSelector.value !== '') {
                     this.perpage = parseInt(perpageSelector.value);
                 }
             }
@@ -357,7 +357,7 @@ export abstract class DataproviderBase {
 
         //input init
         const searchInputID = searchbarElement.getAttribute('data-input-ID')
-        if (searchBtnID !== undefined) {
+        if (searchInputID !== null) {
             let searchInputElement = document.querySelector('#'+searchInputID) as HTMLInputElement|null;
             if (searchInputElement === null) {
                 searchInputElement = this.searchbar as HTMLInputElement;
@@ -629,7 +629,7 @@ export abstract class DataproviderBase {
      */
     protected createPaginationNode(text:string, page:number, current:boolean = false): HTMLButtonElement {
         const element = document.createElement('button');
-        element.classList.value = this.pageBtnCls + ' ' + this.pageNumberedBtnCls;
+        element.classList.value = `${this.pageBtnCls ?? ''} ${this.pageNumberedBtnCls ?? ''}`.trim();
         element.setAttribute('data-value', page.toString());
         element.textContent = text;
         if (current) {
@@ -646,7 +646,7 @@ export abstract class DataproviderBase {
      */
     protected createPaginationDivider():HTMLSpanElement {
         const element = document.createElement('span');
-        element.classList.value = this.pageBtnCls + ' ' + this.pageBtnDividerCls;
+        element.classList.value = `${this.pageBtnCls ?? ''} ${this.pageBtnDividerCls ?? ''}`.trim();
         element.textContent = '...';
         return element;
     }
@@ -657,7 +657,7 @@ export abstract class DataproviderBase {
      */
     protected createEmptyPaginationNode():HTMLButtonElement {
         const element = document.createElement('button');
-        element.classList.value = this.pageBtnCls + ' ' + this.pageEmptyBtnCls;
+        element.classList.value = `${this.pageBtnCls ?? ''} ${this.pageEmptyBtnCls ?? ''}`.trim();
         return element;
     }
 
@@ -1021,8 +1021,7 @@ export abstract class DataproviderBase {
     protected addFilter(displayString:string, filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
         displayString = this.formatString(displayString);
 
-        for (const filterArray in this.filters) {
-            const currFilter = filterArray as unknown as Filter;
+        for (const currFilter of this.filters) {
             if (currFilter.filter === filter || currFilter.operator === operator) {
                 throw new Error('Duplicate filter error');
             }
@@ -1340,7 +1339,7 @@ export abstract class DataproviderBase {
      * @private
      */
     private markItemAsReadonly(item: Element): Element {
-        if (item.hasAttribute('readony') === true) {
+        if (item.hasAttribute('readonly') === true) {
             return item;
         }
 
@@ -1695,7 +1694,7 @@ export abstract class DataproviderBase {
      * Format a string to a friendly readable format
      */
     protected formatString(string:string) {
-        string = string.replace('_', ' ');
+        string = string.replace(/_/g, ' ');
         string = string.charAt(0).toUpperCase() + string.slice(1);
         return string;
     }

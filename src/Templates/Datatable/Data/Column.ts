@@ -57,7 +57,7 @@ export class Column {
 
         // set size
         if (this.size !== null) {
-            td.style.width = this.size + '% !important'
+            td.style.setProperty('width', this.size + '%', 'important')
         }
 
         // create wrapper

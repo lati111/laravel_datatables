@@ -65,7 +65,7 @@ export class AbstractTemplatedDatalist extends AbstractDatalistTemplate {
                 if (select !== null && value !== null) {
                     const option = select.querySelector(`option[value="${value}"]`) as HTMLOptionElement|null;
                     if (option === null) {
-                        throw new DatalistLoadingError(`Option with value "${value}" does not exist on select "${value}"`, this.errorCallback)
+                        throw new DatalistLoadingError(`Option with value "${value}" does not exist on select "${key}"`, this.errorCallback)
                     }
 
                     select.querySelector(`option`)?.removeAttribute('selected');

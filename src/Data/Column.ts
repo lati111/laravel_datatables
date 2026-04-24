@@ -53,7 +53,7 @@ export class Column {
         this.wrapperStyling = header.getAttribute('data-wrapper-styling') ?? '';
         this.wrapperCls = header.getAttribute('data-wrapper-cls') ?? '';
         this.defaultValue = header.getAttribute('data-default-value');
-        this.visible = header.getAttribute('data-visible') === 'true';
+        this.visible = header.getAttribute('data-visible') !== 'false';
 
         if (header.hasAttribute('data-template-id')) {
             const template = document.querySelector('#'+header.getAttribute('data-template-id')!);
@@ -98,7 +98,7 @@ export class Column {
 
         // create wrapper
         let container: HTMLElement = td;
-        if (this.wrapperCls !== null) {
+        if (this.wrapperCls !== '') {
             container = document.createElement('div');
             container.classList.value = this.wrapperCls;
             container.style.all = this.wrapperStyling;
@@ -135,7 +135,7 @@ export class Column {
         }
 
         // return td without wrapper
-        if (this.wrapperCls === null) {
+        if (this.wrapperCls === '') {
             return container as HTMLTableCellElement;
         }
 

@@ -45,7 +45,7 @@ export abstract class AbstractDatalistTemplate extends AbstractDataproviderTempl
         if (this.filterForm !== null) {
             const valueSelect = this.filterForm.querySelector('.dataselect-container [name="dataselect"]');
             if (valueSelect !== null) {
-                if (valueSelect.id === null) {
+                if (valueSelect.id === '') {
                     valueSelect.id = this.dataproviderID + '-value-dataselect';
                 }
 
@@ -91,6 +91,8 @@ export abstract class AbstractDatalistTemplate extends AbstractDataproviderTempl
                     dataselect.setSelectedItem(filter['value'], filter['display'])
                 }
             }
+        } else {
+            super.performLoadStoredFilterData(filter);
         }
     }
 

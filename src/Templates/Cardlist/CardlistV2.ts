@@ -1,7 +1,5 @@
 import {DataTableSettings} from "../../Settings/DataTableSettings";
 import {DatalistCore} from "../../DatalistCore";
-import {Column} from "../../Data/Column";
-import {DatalistLoadingError} from "../../Exceptions/DatalistLoadingError";
 
 export class CardlistV2 extends DatalistCore {
     /** @inheritDoc */

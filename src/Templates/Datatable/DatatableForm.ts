@@ -67,7 +67,7 @@ export class DatatableForm extends Datatable {
     protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
         await super.changeUrls(replacers)
 
-        if (this.saveUrl !== null) {
+        if (this.saveUrl !== '') {
             this.saveUrl = this.changeUrl(this.saveUrlTemplate!, replacers);
         }
     }
@@ -169,7 +169,7 @@ export class DatatableForm extends Datatable {
         const inputs = row.querySelectorAll('td input.data-input, textarea.data-input, td select.data-input')
         for (let i = 0; i < inputs.length; i++) {
             const input = inputs[i] as HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement;
-            if (input.name === null) {
+            if (input.name === '') {
                 throw new DatalistError('input missing on input ' + input.outerHTML, this.errorCallback)
             }
 

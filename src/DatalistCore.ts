@@ -94,7 +94,7 @@ export abstract class DatalistCore {
 
         // Setup dataprovider information
         this.urls['data'] = this.datalistElement.getAttribute('data-url') ?? '-';
-        if (this.datalistElement.getAttribute('data-url') === '-') {
+        if (this.urls['data'] === '-') {
             throw new DatalistConstructionError('No `data-url` set on dataprovider '+dataprovider, this.onErrorCallback);
         }
 
@@ -140,7 +140,7 @@ export abstract class DatalistCore {
 
         // Post load callback
         if (this.postLoadCallback !== null) {
-            const updatedData = this.postLoadCallback(this);
+            const updatedData = this.postLoadCallback(this, data);
             if (updatedData !== null) {
                 data = updatedData;
             }

@@ -20,7 +20,7 @@ export class DataTableV2 extends DatalistCore {
      * Obtain all headers with the .datatable-header class and convert them to columns.
      */
     public constructor(dataprovider: Element|string, body: Element|string|null = null, paginationElement: HTMLElement|null = null) {
-        super(dataprovider, body);
+        super(dataprovider, body, paginationElement);
 
         // Obtain column data
         const headers = this.getOverarchingContainer().querySelectorAll('.datatable-header') as NodeListOf<HTMLElement>;
@@ -88,7 +88,7 @@ export class DataTableV2 extends DatalistCore {
 
         // Add cells to row in column order
         const length = Object.keys(this.columns).length;
-        for (let i = 0; i <= length; i++) {
+        for (let i = 0; i < length; i++) {
             if (!(i in rowData)) { // Find column if no value was set
                 let key: keyof typeof this.columns;
                 for (key in this.columns) {

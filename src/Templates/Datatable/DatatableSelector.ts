@@ -135,6 +135,8 @@ export class DatatableSelector extends Datatable {
         const element = (e.target as Element).closest('.selected-element') as Element;
         element.remove();
 
+        delete this.selectedItems[identifier];
+
         if (this.onDeselectEvent !== null && this.allowSelectEvents) {
             this.onDeselectEvent(this, identifier)
         }
