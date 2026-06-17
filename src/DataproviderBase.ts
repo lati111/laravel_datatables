@@ -551,8 +551,24 @@ export abstract class DataproviderBase {
         const url = this.generateDataUrl(this.pagecountUrl).toString()
 
         const pages = await this.fetchData(url) as number;
-        this.paginationContent.innerHTML = '';
         this.pages = pages;
+
+        this.renderPagination();
+    }
+
+    /**
+     * Renders pagination buttons using the current page and pages values.
+     * Separated from fillPagination so it can be called directly when pagination data
+     * is already available from a schema v3 combined response.
+     * @return void
+     */
+    protected renderPagination() {
+        if (this.paginationContent === null || this.pages === null || this.page === null) {
+            return;
+        }
+
+        const pages = this.pages;
+        this.paginationContent.innerHTML = '';
 
         // show previous button
         if (this.prevBtn !== null) {
@@ -702,7 +718,21 @@ export abstract class DataproviderBase {
 
         // get the data
         const url = this.generateDataUrl();
-        const data = await this.fetchData(url.toString())
+        const rawData = await this.fetchData(url.toString())
+
+        // detect schema v3 combined response
+        let data: any;
+        let schemaV3 = false;
+        if (rawData !== null && typeof rawData === 'object' && !Array.isArray(rawData) && 'items' in rawData) {
+            schemaV3 = true;
+            data = rawData.items;
+
+            if (rawData.pagination && this.pagination !== null) {
+                this.pages = rawData.pagination.pages;
+            }
+        } else {
+            data = rawData;
+        }
 
         // save the data
         let empty = true;
@@ -732,7 +762,11 @@ export abstract class DataproviderBase {
         }
 
         // refill the pagination
-        await this.fillPagination()
+        if (schemaV3 && this.pagination !== null) {
+            this.renderPagination();
+        } else {
+            await this.fillPagination()
+        }
 
         // save data history
         if (this.history === true) {
@@ -795,6 +829,8 @@ export abstract class DataproviderBase {
      */
     public generateDataUrl(baseUrl:string = this.url):URL {
         let url = new URL(baseUrl);
+
+        url.searchParams.set('schema', '3');
 
         if (this.pagination !== null) {
             url.searchParams.set('page', (this.page ?? 1).toString());
