@@ -4,12 +4,7 @@ import type {Constructor} from "./types";
 export function SearchMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithSearch extends Base {
         protected initSearchbar() {
-            let searchbarID = this.dataprovider.getAttribute('data-searchbar-ID');
-            if (searchbarID === null) {
-                searchbarID = this.dataproviderID + '-searchbar';
-            }
-
-            const searchbarElement = document.querySelector('#' + searchbarID + '.searchbar')
+            const searchbarElement = this.resolveElement('data-searchbar-ID', '-searchbar', '.searchbar');
             if (searchbarElement === null) {
                 return;
             }

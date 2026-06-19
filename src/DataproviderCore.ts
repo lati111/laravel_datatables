@@ -106,34 +106,33 @@ export abstract class DataproviderCore {
     //| Core initialization methods
 
     protected initBody() {
-        let contentID = this.dataprovider.getAttribute('data-content-ID');
-        if (contentID === null) {
-            contentID = this.dataproviderID + '-content';
-        }
-
         this.emptyBody = this.dataprovider.getAttribute('data-empty-body') ?? '';
 
-        const contentElement = document.querySelector('#' + contentID)
+        const contentElement = this.resolveElement('data-content-ID', '-content');
         if (contentElement === null) {
+            const contentID = this.dataprovider.getAttribute('data-content-ID') ?? this.dataproviderID + '-content';
             throw new DatalistConstructionError('Could not find content on dataprovider with ID ' + contentID, this.errorCallback);
         }
         this.body = contentElement;
 
-        let disableContainerId = this.dataprovider.getAttribute('data-disable-container-ID') ?? this.dataproviderID + '-disable-container';
-        this.disableContainer = document.querySelector('#' + disableContainerId)
+        this.disableContainer = this.resolveElement('data-disable-container-ID', '-disable-container');
     }
 
     protected initSpinner() {
-        let spinnerID = this.dataprovider.getAttribute('data-spinner-ID');
-        if (spinnerID === null) {
-            spinnerID = this.dataproviderID + '-spinner';
-        }
-
-        const spinnerElement = document.querySelector('#' + spinnerID + '.spinner')
+        const spinnerElement = this.resolveElement('data-spinner-ID', '-spinner', '.spinner');
         if (spinnerElement !== null) {
             this.spinner = spinnerElement;
             this.showBodyDuringLoad = spinnerElement.getAttribute('data-hide-body') === 'false';
         }
+    }
+
+    protected resolveElement<T extends Element>(
+        attrName: string,
+        defaultSuffix: string,
+        selector: string = ''
+    ): T | null {
+        const id = this.dataprovider.getAttribute(attrName) ?? this.dataproviderID + defaultSuffix;
+        return document.querySelector('#' + id + selector) as T | null;
     }
 
     protected formatString(string:string) {

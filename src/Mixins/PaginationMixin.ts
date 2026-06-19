@@ -5,19 +5,14 @@ import type {Constructor} from "./types";
 export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithPagination extends Base {
         protected initPagination() {
-            let paginationID = this.dataprovider.getAttribute('data-pagination-ID');
-            if (paginationID === null) {
-                paginationID = this.dataproviderID + '-pagination';
-            }
-
-            const paginationElement = document.querySelector('#' + paginationID + '.pagination')
+            const paginationElement = this.resolveElement('data-pagination-ID', '-pagination', '.pagination');
             if (paginationElement === null) {
                 return;
             }
 
             const url = paginationElement.getAttribute('data-count-url');
             if (url === null) {
-                throw new DatalistConstructionError('Pagination with ID "'+paginationID+'" is missing attribute "data-count-url"', this.errorCallback)
+                throw new DatalistConstructionError('Pagination with ID "'+paginationElement.id+'" is missing attribute "data-count-url"', this.errorCallback)
             }
 
             this.pagination = paginationElement;

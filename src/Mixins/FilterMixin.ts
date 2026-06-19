@@ -22,32 +22,30 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
 
             // setup form
-            const filterFormId = this.dataprovider.getAttribute('data-filter-form-id') ?? this.dataproviderID + '-filter-form'
-            this.filterForm = document.querySelector('#'+filterFormId);
+            this.filterForm = this.resolveElement<HTMLElement>('data-filter-form-id', '-filter-form');
             if (this.filterForm === null) {
                 return;
             }
 
             // setup display list
-            const filterlistId = this.dataprovider.getAttribute('data-filter-list-id') ?? this.dataproviderID + '-filter-list'
-            this.filterlist = document.querySelector('#'+filterlistId);
+            this.filterlist = this.resolveElement<HTMLElement>('data-filter-list-id', '-filter-list');
 
             // setup filter select
             this.filterSelect = this.filterForm.querySelector('[name="filter"]');
             if (this.filterSelect === null) {
-                throw new DatalistConstructionError('Filter selector with name "filter" is missing on filter form #'+filterFormId, this.errorCallback);
+                throw new DatalistConstructionError('Filter selector with name "filter" is missing on filter form #'+this.filterForm.id, this.errorCallback);
             }
 
             // operator filter select
             this.operatorSelect = this.filterForm.querySelector('[name="operator"]');
             if (this.operatorSelect === null) {
-                throw new DatalistConstructionError('Operator selector with name "operator" is missing on filter form #'+filterFormId, this.errorCallback);
+                throw new DatalistConstructionError('Operator selector with name "operator" is missing on filter form #'+this.filterForm.id, this.errorCallback);
             }
 
             // filter confirm button
             this.addFilterButton = document.querySelector('button#'+this.dataproviderID+'-filter-confirm-button');
             if (this.addFilterButton === null) {
-                throw new DatalistConstructionError('Button with id "'+this.dataproviderID+'-filter-confirm-button" is missing #'+filterFormId, this.errorCallback);
+                throw new DatalistConstructionError('Button with id "'+this.dataproviderID+'-filter-confirm-button" is missing #'+this.filterForm.id, this.errorCallback);
             }
 
             this.addFilterButton.addEventListener('click', this.addFilterEvent.bind(this));
@@ -276,14 +274,18 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             this.filterForm?.setAttribute('data-filter-type', data['type']);
         }
 
+        private getFilterFormElement<T extends HTMLElement>(selector: string, description: string): T {
+            const element = this.filterForm?.querySelector(selector) as T | null;
+            if (element === null) {
+                throw new DatalistConstructionError(`${description} not found on dataprovider #${this.dataproviderID}`, this.errorCallback);
+            }
+            return element;
+        }
+
         protected async performOnfilterSelect(data:{[key:string]:any}) {
             switch (data['type']) {
                 case 'select':
-                    const select = this.filterForm?.querySelector('select[name="select"].filter-value-select') as HTMLSelectElement|null;
-                    if (select === null) {
-                        throw new DatalistConstructionError('Value select with name `select` not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                    }
-
+                    const select = this.getFilterFormElement<HTMLSelectElement>('select[name="select"].filter-value-select', 'Value select with name `select`');
                     select.classList.remove('hidden');
                     select.innerHTML = '';
 
@@ -300,22 +302,14 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
 
                     break;
                 case 'number':
-                    const numberInput = this.filterForm?.querySelector('input[name="number"][type="number"].filter-value-select') as HTMLInputElement|null;
-                    if (numberInput === null) {
-                        throw new DatalistConstructionError('Value number input with name `number` not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                    }
-
+                    const numberInput = this.getFilterFormElement<HTMLInputElement>('input[name="number"][type="number"].filter-value-select', 'Value number input with name `number`');
                     numberInput.value = (parseInt(data['options']['min']) < 0) ?  '0' : data['options']['min'];
                     numberInput.max = data['options']['max'];
                     numberInput.min = data['options']['min'];
                     numberInput.classList.remove('hidden');
                     break;
                 case 'date':
-                    const dateInput = this.filterForm?.querySelector('input[name="date"][type="date"].filter-value-select') as HTMLInputElement|null;
-                    if (dateInput === null) {
-                        throw new DatalistConstructionError('Value date input with name `date` not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                    }
-
+                    const dateInput = this.getFilterFormElement<HTMLInputElement>('input[name="date"][type="date"].filter-value-select', 'Value date input with name `date`');
                     dateInput.value = '0';
                     dateInput.max = data['options']['max'];
                     dateInput.min = data['options']['min'];
@@ -350,31 +344,19 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                     this.addFilter(displayString, filter, operator, value)
                     break;
                 case 'select':
-                    const select = this.filterForm?.querySelector('select[name="select"].filter-value-select') as HTMLSelectElement|null;
-                    if (select === null) {
-                        throw new DatalistConstructionError('Value select with name `select` not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                    }
-
+                    const select = this.getFilterFormElement<HTMLSelectElement>('select[name="select"].filter-value-select', 'Value select with name `select`');
                     value = select.value;
                     displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
                     this.addFilter(displayString, filter, operator, value)
                     break;
                 case 'number':
-                    const numberInput = this.filterForm?.querySelector('input[name="number"][type="number"].filter-value-select') as HTMLInputElement|null;
-                    if (numberInput === null) {
-                        throw new DatalistConstructionError('Value number input with name `number` not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                    }
-
+                    const numberInput = this.getFilterFormElement<HTMLInputElement>('input[name="number"][type="number"].filter-value-select', 'Value number input with name `number`');
                     value = numberInput.value;
                     displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
                     this.addFilter(displayString, filter, operator, value)
                     break;
                 case 'date':
-                    const dateInput = this.filterForm?.querySelector('input[name="date"][type="date"].filter-value-select') as HTMLInputElement|null;
-                    if (dateInput === null) {
-                        throw new DatalistConstructionError('Value date input with name `date` not found on dataprovider #'+this.dataproviderID, this.errorCallback)
-                    }
-
+                    const dateInput = this.getFilterFormElement<HTMLInputElement>('input[name="date"][type="date"].filter-value-select', 'Value date input with name `date`');
                     value = dateInput.value;
                     displayString = filter + ' ' + this.operatorSelect!.options[this.operatorSelect!.selectedIndex].textContent + ' ' + value;
                     this.addFilter(displayString, filter, operator, value)
