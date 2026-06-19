@@ -2,15 +2,7 @@ import {Datatable} from "./Datatable";
 import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 import {Item} from "./Data/Item";
 
-/**
- * @inheritDoc
- *
- * @property {Element|null} selectList List where selected items should be displayed
- *
- * @property {string|null} selectionUrl Url to get list of selected items from during the pre-load phase
- * @property {string|null} selectionUrlTemplate Url to get list of selected items from during the pre-load phase when url is dynamic
- */
-
+/** Datatable with multi-select checkboxes and a selection list panel. Extends {@link Datatable}. */
 export class DatatableSelector extends Datatable {
     protected selectList: Element | null = null;
     public selectedItems:{[key: string]: Item} = {};

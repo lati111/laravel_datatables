@@ -3,6 +3,7 @@ import {DataSelect} from "./Select/Dataselect";
 import {DatalistConstructionError} from "../Exceptions/DatalistConstructionError";
 import {Filter} from "../Data/Filter";
 
+/** Adds DataSelect-based filter management on top of {@link AbstractDataproviderTemplate}. Manages filter form dataselects and filter dataselect columns. */
 export abstract class AbstractDatalistTemplate extends AbstractDataproviderTemplate {
     //| Filter properties
 

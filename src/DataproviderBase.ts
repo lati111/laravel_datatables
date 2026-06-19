@@ -8,9 +8,9 @@ import {SearchMixin} from "./Mixins/SearchMixin";
 import {ItemMixin} from "./Mixins/ItemMixin";
 
 // Compose mixins in dependency order:
-// Readonly (no deps) → Filter (needs load) → StatePersistence (needs Filter)
-// → Url (needs StatePersistence) → Pagination (needs Url) → Search (needs load)
-// → Item (needs Readonly)
+// Readonly (no deps) -> Filter (needs load) -> StatePersistence (needs Filter)
+// -> Url (needs StatePersistence) -> Pagination (needs Url) -> Search (needs load)
+// -> Item (needs Readonly)
 const WithReadonly = ReadonlyMixin(DataproviderCore);
 const WithFilters = FilterMixin(WithReadonly);
 const WithStatePersistence = StatePersistenceMixin(WithFilters);
@@ -19,7 +19,14 @@ const WithPagination = PaginationMixin(WithUrl);
 const WithSearch = SearchMixin(WithPagination);
 const WithItems = ItemMixin(WithSearch);
 
+/**
+ * Base class for all dataproviders. Composes all mixins and orchestrates
+ * initialization, DOM setup, data fetching, and rendering.
+ *
+ * Subclasses must implement {@link fetchData}, {@link postData}, and {@link createItem}.
+ */
 export abstract class DataproviderBase extends WithItems {
+    /** Initializes the dataprovider: runs setup, loads filters, then fetches data or restores from URL state. */
     public async init(): Promise<void> {
         this.setup();
 
@@ -33,6 +40,7 @@ export abstract class DataproviderBase extends WithItems {
         }
     }
 
+    /** Initializes all DOM elements (body, spinner, pagination, searchbar, filters). Subclasses must call `super.setup()`. */
     protected setup(): void {
         this.initBody();
         this.initItemParameters();
@@ -48,29 +56,21 @@ export abstract class DataproviderBase extends WithItems {
         this.filterSetup();
     }
 
+    /**
+     * Fetches data and renders items. Handles schema v3 combined responses,
+     * pagination, history state, and readonly mode.
+     *
+     * @param shouldResetPagination - When true, resets to page 1 before fetching.
+     * @param keepContents - When true, appends new items instead of clearing existing ones.
+     */
     public async load(shouldResetPagination: boolean = false, keepContents: boolean = false) {
         if (this.blockLoading || this.loading) {
             return;
         }
 
         this.loading = true;
+        this.showLoadingState();
 
-        // show the spinner if it is enabled
-        if (this.spinner !== null) {
-            this.spinner.classList.remove('hidden');
-        }
-
-        // disable the container if on exists
-        if (this.disableContainer !== null) {
-            this.disableContainer.setAttribute('disabled', 'disabled');
-        }
-
-        // hide the body if needed
-        if (!this.showBodyDuringLoad) {
-            this.body.classList.add('hidden');
-        }
-
-        // clear contents
         if (!keepContents) {
             this.body.innerHTML = '';
         }
@@ -79,11 +79,10 @@ export abstract class DataproviderBase extends WithItems {
             this.page = 1;
         }
 
-        // get the data
         const url = this.generateDataUrl();
         const rawData = await this.fetchData(url.toString())
 
-        // detect schema v3 combined response
+        // schema v3 wraps items and pagination in an envelope object
         let data: any;
         let schemaV3 = false;
         if (rawData !== null && typeof rawData === 'object' && !Array.isArray(rawData) && 'items' in rawData) {
@@ -97,7 +96,6 @@ export abstract class DataproviderBase extends WithItems {
             data = rawData;
         }
 
-        // save the data
         let empty = true;
         let key: keyof typeof data;
         for (key in data) {
@@ -109,45 +107,57 @@ export abstract class DataproviderBase extends WithItems {
             this.body.innerHTML = this.emptyBody;
         }
 
-        // hide the spinner if it is enabled
-        if (this.spinner !== null) {
-            this.spinner.classList.add('hidden');
-        }
+        this.hideLoadingState();
 
-        // show the body again if it was hidden
-        if (!this.showBodyDuringLoad) {
-            this.body.classList.remove('hidden');
-        }
-
-        // enable the container if it exists
-        if (this.disableContainer !== null) {
-            this.disableContainer.removeAttribute('disabled');
-        }
-
-        // refill the pagination
         if (schemaV3 && this.pagination !== null) {
             this.renderPagination();
         } else {
             await this.fillPagination()
         }
 
-        // save data history
-        if (this.history === true) {
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set(this.dataproviderID, JSON.stringify(this.getStorableData()))
-            window.history.pushState({urlPath:currentUrl.toString()}, '', currentUrl.toString());
-        }
+        this.pushHistoryState();
 
         this.loading = false;
 
-        // remarks as readonly if needed
         if (this.readonly) {
             this.applyReadonlyMode();
         }
 
-        // fire event
         if (this.onLoadFinishedEvent !== null) {
             this.onLoadFinishedEvent(this)
         }
+    }
+
+    private showLoadingState(): void {
+        if (this.spinner !== null) {
+            this.spinner.classList.remove('hidden');
+        }
+        if (this.disableContainer !== null) {
+            this.disableContainer.setAttribute('disabled', 'disabled');
+        }
+        if (!this.showBodyDuringLoad) {
+            this.body.classList.add('hidden');
+        }
+    }
+
+    private hideLoadingState(): void {
+        if (this.spinner !== null) {
+            this.spinner.classList.add('hidden');
+        }
+        if (!this.showBodyDuringLoad) {
+            this.body.classList.remove('hidden');
+        }
+        if (this.disableContainer !== null) {
+            this.disableContainer.removeAttribute('disabled');
+        }
+    }
+
+    private pushHistoryState(): void {
+        if (this.history !== true) {
+            return;
+        }
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set(this.dataproviderID, JSON.stringify(this.getStorableData()));
+        window.history.pushState({urlPath: currentUrl.toString()}, '', currentUrl.toString());
     }
 }

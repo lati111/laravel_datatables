@@ -1,9 +1,13 @@
+/**
+ * Mixin that adds pagination controls and page navigation to a dataprovider.
+ */
 import type {DataproviderCore} from "../DataproviderCore";
 import {DatalistConstructionError} from "../Exceptions/DatalistConstructionError";
 import type {Constructor} from "./types";
 
 export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithPagination extends Base {
+        /** Initializes pagination elements, navigation buttons, and per-page selector from DOM attributes. */
         protected initPagination() {
             const paginationElement = this.resolveElement('data-pagination-ID', '-pagination', '.pagination');
             if (paginationElement === null) {
@@ -72,6 +76,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             }
         }
 
+        /** Fetches the total page count from the server and triggers a pagination render. */
         protected async fillPagination() {
             if (this.pagecountUrl === null || this.paginationContent === null) {
                 return;
@@ -83,12 +88,12 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
 
             const url = this.generateDataUrl(this.pagecountUrl).toString()
 
-            const pages = await this.fetchData(url) as number;
-            this.pages = pages;
+            this.pages = await this.fetchData(url) as number;
 
             this.renderPagination();
         }
 
+        /** Renders the numbered page buttons, dividers, and navigation controls into the DOM. */
         protected renderPagination() {
             if (this.paginationContent === null || this.pages === null || this.page === null) {
                 return;
@@ -97,14 +102,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             const pages = this.pages;
             this.paginationContent.innerHTML = '';
 
-            // show previous button
-            if (this.prevBtn !== null) {
-                if (this.prevBtn.hasAttribute('disabled') && this.page !== 1) {
-                    this.prevBtn.removeAttribute('disabled')
-                } else if (this.page === 1) {
-                    this.prevBtn.setAttribute('disabled', 'disabled')
-                }
-            }
+            this.updateNavButton(this.prevBtn, this.page === 1);
 
             if (this.page > this.pagesInPagination + 1) { // show skip to first page
                 this.paginationContent.append(this.createPaginationNode('1', 1))
@@ -153,16 +151,10 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
                 }
             }
 
-            // show next button
-            if (this.nextBtn !== null) {
-                if (this.nextBtn.hasAttribute('disabled') && this.page !== pages) {
-                    this.nextBtn.removeAttribute('disabled')
-                } else if (this.page === pages) {
-                    this.nextBtn.setAttribute('disabled', 'disabled')
-                }
-            }
+            this.updateNavButton(this.nextBtn, this.page === pages);
         }
 
+        /** Creates a clickable pagination button for a specific page number. */
         protected createPaginationNode(text:string, page:number, current:boolean = false): HTMLButtonElement {
             const element = document.createElement('button');
             element.classList.value = `${this.pageBtnCls ?? ''} ${this.pageNumberedBtnCls ?? ''}`.trim();
@@ -176,6 +168,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             return element;
         }
 
+        /** Creates a "..." divider span element between non-contiguous page ranges. */
         protected createPaginationDivider():HTMLSpanElement {
             const element = document.createElement('span');
             element.classList.value = `${this.pageBtnCls ?? ''} ${this.pageBtnDividerCls ?? ''}`.trim();
@@ -183,12 +176,14 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             return element;
         }
 
+        /** Creates an invisible placeholder button to maintain consistent pagination layout. */
         protected createEmptyPaginationNode():HTMLButtonElement {
             const element = document.createElement('button');
             element.classList.value = `${this.pageBtnCls ?? ''} ${this.pageEmptyBtnCls ?? ''}`.trim();
             return element;
         }
 
+        /** Handles click events on page buttons and navigation arrows, then reloads data. */
         protected async pageChangeEvent(e:Event) {
             if (this.pagination === null || this.page === null || this.pages === null) {
                 return;
@@ -220,6 +215,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             }
         }
 
+        /** Handles changes to the per-page selector and reloads data with the new page size. */
         protected async perPageChangeEvent() {
             if (this.pagination === null || this.perpageSelector === null) {
                 return;
@@ -228,6 +224,12 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             this.perpage = parseInt(this.perpageSelector.value);
 
             await this.load()
+        }
+
+        private updateNavButton(button: HTMLButtonElement | null, shouldDisable: boolean): void {
+            if (button === null) return;
+            if (shouldDisable) button.setAttribute('disabled', 'disabled');
+            else button.removeAttribute('disabled');
         }
     }
     return WithPagination;

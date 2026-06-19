@@ -1,8 +1,13 @@
+/**
+ * Mixin that adds search functionality to a dataprovider, binding a searchbar input and confirm button to trigger filtered data loads.
+ * @module SearchMixin
+ */
 import type {DataproviderCore} from "../DataproviderCore";
 import type {Constructor} from "./types";
 
 export function SearchMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithSearch extends Base {
+        /** Initializes the searchbar element, confirm button, and input event listeners. */
         protected initSearchbar() {
             const searchbarElement = this.resolveElement('data-searchbar-ID', '-searchbar', '.searchbar');
             if (searchbarElement === null) {
@@ -33,6 +38,7 @@ export function SearchMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Handles searchbar events, triggering a data reload on Enter key or button click. */
         protected async searchbarEvent(e:Event) {
             if (e instanceof KeyboardEvent) {
                 if (e.key !== "Enter") {

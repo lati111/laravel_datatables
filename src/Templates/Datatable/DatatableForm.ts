@@ -1,17 +1,7 @@
 import {Datatable} from "./Datatable";
 import {DatalistError} from "../../Exceptions/DatalistError";
 
-/**
- * @property {string} saveUrl The url where to save this item to
- * @property {string} saveUrlTemplate The templated url where to save this item to during a dynamic operation
- *
- * @property {string[]} emptyRowWhiteList The whitelist of allowed column in the empty row
- * @property {string|null} buttonColumn The column name of the column containing the buttons
- *
- * @property {string|null} saveButtonContent The content that should be put in the save button
- * @property {string|null} saveButtonCls Additional classes to the save button
- */
-
+/** Datatable with inline editing capabilities — adds save buttons and form submission per row. Extends {@link Datatable}. */
 export class DatatableForm extends Datatable {
     protected saveUrl: string = '';
     protected saveUrlTemplate: string = '';

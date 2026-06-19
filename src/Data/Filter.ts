@@ -1,21 +1,30 @@
+/** Represents a single active filter with its source type, column, operator, and value. */
 export class Filter {
+    /** Source type: `form`, `manual`, `checkbox`, `input`, or `dataselect`. */
     public readonly type: string;
 
-    /** @type {HTMLElement|null} The element this filter uses as it's display */
+    /** The DOM element displaying this filter as a removable chip, if any. */
     public displayElement: HTMLElement|null = null;
 
-    /** @type {string} The formatted string to display for this filter */
+    /** Human-readable label shown in the filter display chip. */
     public display: string|null;
 
-    /** @type {string} The filter name */
+    /** Column name this filter applies to. */
     public readonly filter: string;
 
-    /** @type {string} The operator used in the filter */
+    /** Comparison operator (e.g. `=`, `!=`, `>`, `<`, `LIKE`). */
     public readonly operator: string;
 
-    /** @type {string|null} The value used in the filter */
+    /** Filter value, or null for valueless operators. */
     public readonly value: string|null;
 
+    /**
+     * @param type - Source that created this filter (`form`, `manual`, `checkbox`, `input`, `dataselect`).
+     * @param filter - Column name to filter on.
+     * @param operator - Comparison operator.
+     * @param value - Filter value.
+     * @param display - Human-readable label for the filter chip.
+     */
     public constructor(type:string, filter:string, operator:string, value:string|null = null, display:string|null = null) {
         this.type = type;
         this.display = display;

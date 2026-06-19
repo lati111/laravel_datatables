@@ -1,15 +1,7 @@
 import {AbstractDataproviderTemplate} from "../AbstractDataproviderTemplate";
 import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 
-/** @protected {Element|null} expandButton The button responsible for expanding the body
- * @protected {Element|null} collapseButton The button responsible for collapsing the body
- *
- * @protected {number} searchTimer The number of milliseconds until a search should be attempted
- *
- * @property {string} currentLabel The label that is currently shown
- * @property {string} currentIdentifier The identifier of the item that is currently shown
- */
-
+/** Searchable dropdown selector with expand/collapse behavior. Extends {@link AbstractDataproviderTemplate}. */
 export class DataSelect extends AbstractDataproviderTemplate {
     protected expandButton: Element | null = null;
     protected collapseButton: Element | null = null;

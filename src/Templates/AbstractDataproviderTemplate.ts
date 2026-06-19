@@ -1,5 +1,6 @@
 import {DataproviderBase} from "../DataproviderBase";
 
+/** Provides default fetch/post implementations using the browser Fetch API. First concrete layer above {@link DataproviderBase}. */
 export abstract class AbstractDataproviderTemplate extends DataproviderBase {
     /** @inheritDoc */
     async fetchData(url: string): Promise<any> {

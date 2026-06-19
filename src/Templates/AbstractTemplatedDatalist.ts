@@ -2,8 +2,7 @@ import {DatalistConstructionError} from "../Exceptions/DatalistConstructionError
 import {DatalistLoadingError} from "../Exceptions/DatalistLoadingError";
 import { AbstractDatalistTemplate } from "./AbstractDatalistTemplate";
 
-/** @property {Element} template The template element that serves as the base for all items */
-
+/** Clones an HTML template element and binds data values to inputs, selects, spans, and images. Extends {@link AbstractDatalistTemplate}. */
 export class AbstractTemplatedDatalist extends AbstractDatalistTemplate {
     protected template: Element|null = null;
 

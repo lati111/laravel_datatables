@@ -1,9 +1,15 @@
+/**
+ * Mixin that adds readonly/disabled state management to dataprovider elements.
+ * Handles toggling interactive elements between editable and readonly states,
+ * applying appropriate HTML attributes and CSS classes.
+ */
 import type {DataproviderCore} from "../DataproviderCore";
 import {DatalistError} from "../Exceptions/DatalistError";
 import type {Constructor} from "./types";
 
 export function ReadonlyMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithReadonly extends Base {
+        /** Applies readonly mode to a specific data item or the entire dataprovider. */
         protected applyReadonlyMode(dataItem: Element|null = null, eventless: boolean = false): void {
             let readonlyClass = 'data-item-readonly'
             if (dataItem === null) {
@@ -28,6 +34,7 @@ export function ReadonlyMixin<TBase extends Constructor<DataproviderCore>>(Base:
             }
         }
 
+        /** Removes readonly mode from a specific data item or the entire dataprovider. */
         protected removeReadonlyMode(dataItem: Element|null = null, eventless: boolean = false): void {
             let readonlyClass = 'data-item-readonly'
             if (dataItem === null) {
@@ -115,16 +122,19 @@ export function ReadonlyMixin<TBase extends Constructor<DataproviderCore>>(Base:
             return item;
         }
 
+        /** Enables readonly mode on the entire dataprovider. */
         public enableReadonlyMode(): void {
             this.readonly = true;
             this.applyReadonlyMode();
         }
 
+        /** Disables readonly mode on the entire dataprovider. */
         public disableReadonlyMode(): void {
             this.readonly = false;
             this.removeReadonlyMode();
         }
 
+        /** Toggles readonly state on the data item associated with the given checkbox. */
         protected toggleItemActivityEvent(element:HTMLInputElement) {
             const dataItem = element.closest('.data-item');
             if (dataItem === null) {

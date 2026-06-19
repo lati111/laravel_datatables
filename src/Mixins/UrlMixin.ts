@@ -1,8 +1,13 @@
+/**
+ * Mixin that handles URL construction and manipulation for dataprovider API requests, including pagination, search, filter, and column selection parameters.
+ * @module UrlMixin
+ */
 import type {DataproviderCore} from "../DataproviderCore";
 import type {Constructor} from "./types";
 
 export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithUrl extends Base {
+        /** Builds a complete API request URL with pagination, search, filter, and column parameters. */
         public generateDataUrl(baseUrl:string = this.url):URL {
             let url = new URL(baseUrl);
 
@@ -36,6 +41,7 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
             return url;
         }
 
+        /** Applies URL placeholder replacements and triggers a fresh data load. */
         public async modifyUrl(replacers:{[key:string]:string}) {
             this.blockLoading = false;
             await this.changeUrls(replacers);
@@ -43,6 +49,7 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
             await this.load(true);
         }
 
+        /** Applies placeholder replacements to both the data URL and page count URL. */
         protected async changeUrls(replacers:{[key:string]:string}): Promise<void> {
             this.url = this.changeUrl(this.urlTemplate, replacers);
             if (this.pagecountUrl !== null) {
@@ -50,6 +57,7 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
             }
         }
 
+        /** Replaces placeholder tokens in a URL string with the provided values. */
         protected changeUrl(url:string, replacers:{[key:string]:string}): string {
             let key: keyof typeof replacers;
             for (key in replacers) {
@@ -59,6 +67,7 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
             return url;
         }
 
+        /** Toggles a custom column's visibility in API requests, or removes the override when set to null. */
         public setCustomSelect(column: string, show: boolean|null) {
             if (column in this.customSelectProperties) {
                 delete this.customSelectProperties[column];

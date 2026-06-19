@@ -4,8 +4,7 @@ import {DatalistLoadingError} from "../../Exceptions/DatalistLoadingError";
 import {AbstractDatalistTemplate} from "../AbstractDatalistTemplate";
 import { AbstractTemplatedDatalist } from "../AbstractTemplatedDatalist";
 
-/** @property {Element} cardTemplate The template element that serves as the base for all cards */
-
+/** Card-based layout dataprovider. Uses template cloning from {@link AbstractTemplatedDatalist}. */
 export class DataCardList extends AbstractTemplatedDatalist {
 
 }

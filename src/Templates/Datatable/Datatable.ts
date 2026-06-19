@@ -3,16 +3,7 @@ import {ColumnHandler} from "./Data/ColumnHandler";
 import {DatalistError} from "../../Exceptions/DatalistError";
 import {Item} from "./Data/Item";
 import {AbstractDatalistTemplate} from "../AbstractDatalistTemplate";
-/**
- * @inheritDoc
- *
- * @property {Array} columns An associative array containing all the columns
- * @property {Array} columnHandlers An associative array containing all the custom column handlers before adding them to the columns
- * @property {NodeListOf<Element>} sortableHeaders A list of headers that can be sorted on
- * @property {string|null} sortNeutralImagePath The image used to show that sort mode is neutral on a column. When null no image is shown
- * @property {string|null} sortDescendingImagePath The image used to show that sort mode is descending on a column. When null no image is shown
- * @property {string|null} sortAscendingImagePath The image used to show that sort mode is ascending on a column. When null no image is shown
- */
+/** Column-based table dataprovider with sorting and optional row selection. Extends {@link AbstractDatalistTemplate}. */
 
 export class Datatable extends AbstractDatalistTemplate {
     //| Column properties

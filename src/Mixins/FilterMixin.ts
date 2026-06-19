@@ -1,11 +1,16 @@
+/**
+ * Mixin that adds filter functionality to a dataprovider, including checkbox, input, select,
+ * and form-based filters with dynamic operator and value selection.
+ */
 import type {DataproviderCore} from "../DataproviderCore";
 import {Filter} from "../Data/Filter";
 import {DatalistConstructionError} from "../Exceptions/DatalistConstructionError";
 import {DatalistFilterError} from "../Exceptions/DatalistFilterError";
-import type {Constructor} from "./types";
+import type {Constructor, DataRecord} from "./types";
 
 export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithFilters extends Base {
+        /** Binds change/blur event listeners on filter checkboxes and inputs, and initializes the filter form elements. */
         protected filterSetup(): void {
             //checkboxes
             const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
@@ -51,6 +56,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             this.addFilterButton.addEventListener('click', this.addFilterEvent.bind(this));
         }
 
+        /** Fetches available filters from the server and populates the filter select dropdown. */
         protected async filterInit(): Promise<void> {
             if (this.filterSelect !== null) {
                 const data = await this.fetchData(this.url + '/filters');
@@ -74,6 +80,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             this.resetFilterSelects();
         }
 
+        /** Adds a filter from the filter form, creates its display element, and triggers a reload. */
         protected addFilter(displayString:string, filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
             displayString = this.formatString(displayString);
 
@@ -96,6 +103,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             return true;
         }
 
+        /** Collects all active filters from form entries, checkboxes, and inputs into a single array. */
         protected getFilters(): Array<Filter>{
             for (let i = 0; i < this.filters.length; i++) {
                 const storedFilter = this.filters[i];
@@ -151,7 +159,8 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             return filters;
         }
 
-        protected normalizeFilterCheckboxes(data:{[key:string]: any}) {
+        /** Synchronizes checkbox checked states with the actual filter data returned from the server. */
+        protected normalizeFilterCheckboxes(data: DataRecord) {
             let filters = data.filters;
             if (filters === undefined) {
                 filters = [];
@@ -197,6 +206,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Resets the filter form selects to their default visibility and ordering. */
         protected resetFilterSelects() {
             if (this.filterSelect === null) {
                 return;
@@ -216,6 +226,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Appends a filter's display element to the filter list and links it back to the filter data. */
         protected addFilterDisplay(filter:Filter) {
             const filterItem = this.createFilterDisplay(filter);
             this.filterlist?.append(filterItem);
@@ -233,6 +244,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Creates the DOM element used to display an active filter with a delete button. */
         protected createFilterDisplay(filter:Filter): HTMLElement {
             const container = document.createElement('div');
             container.classList.value = this.dataprovider.getAttribute('data-filter-item-container-cls') ?? '';
@@ -252,6 +264,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             return container;
         }
 
+        /** Handles filter select change by fetching operators and value options for the selected filter. */
         protected async onFilterSelectEvent() {
             this.resetFilterSelects();
 
@@ -282,7 +295,8 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             return element;
         }
 
-        protected async performOnfilterSelect(data:{[key:string]:any}) {
+        /** Configures the appropriate value input element based on the selected filter's type. */
+        protected async performOnfilterSelect(data: DataRecord) {
             switch (data['type']) {
                 case 'select':
                     const select = this.getFilterFormElement<HTMLSelectElement>('select[name="select"].filter-value-select', 'Value select with name `select`');
@@ -318,6 +332,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Reads the selected filter and operator from the form and delegates to performAddFilterEvent. */
         protected async addFilterEvent() {
             const filter = this.filterSelect?.value ?? null;
             if (filter === null) {
@@ -333,6 +348,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             await this.performAddFilterEvent(filter, type, operator)
         }
 
+        /** Extracts the value from the appropriate form input based on filter type and adds the filter. */
         protected async performAddFilterEvent(filter:string, type:string, operator:string) {
             let value = null;
             let displayString = '';
@@ -364,6 +380,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Removes a filter by its display element and triggers a reload. */
         protected async removeFilterEvent(filterElement: HTMLElement) {
             for (let i = 0; i < this.filters.length; i++) {
                 const filterData = this.filters[i] as Filter;
@@ -376,6 +393,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
         }
 
+        /** Programmatically adds a filter without using the filter form UI. */
         public addManualFilter(filter:string, operator:string, value:string|null = null, init: boolean = false): boolean {
             const filterItem = new Filter('manual', filter, operator, value);
             this.filters.push(filterItem);
