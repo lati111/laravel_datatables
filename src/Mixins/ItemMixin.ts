@@ -68,6 +68,7 @@ export function ItemMixin<TBase extends Constructor<DataproviderCore>>(Base: TBa
                 }
             }
 
+            // Loose equality is intentional: activity flag may arrive as boolean false, number 0, or string "0".
             if (this.itemActivityKey !== null && data[this.itemActivityKey] == false) {
                 this.applyReadonlyMode(item, true);
             }

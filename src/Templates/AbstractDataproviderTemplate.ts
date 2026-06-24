@@ -12,8 +12,7 @@ export abstract class AbstractDataproviderTemplate extends DataproviderBase {
             }
         });
 
-        const data = await response.json();
-        return data as Array<Array<any>>;
+        return await response.json();
     }
 
     /** @inheritDoc */
@@ -27,7 +26,6 @@ export abstract class AbstractDataproviderTemplate extends DataproviderBase {
             body: parameters
         });
 
-        const data = await response.json();
-        return data as Array<Array<any>>;
+        return await response.json();
     }
 }

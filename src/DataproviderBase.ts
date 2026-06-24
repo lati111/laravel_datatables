@@ -26,6 +26,10 @@ const WithItems = ItemMixin(WithSearch);
  * Subclasses must implement {@link fetchData}, {@link postData}, and {@link createItem}.
  */
 export abstract class DataproviderBase extends WithItems {
+    private popstateHandler: (() => void) | null = null;
+    private pendingLoad: Promise<void> | null = null;
+    private nextLoadArgs: {shouldResetPagination: boolean, keepContents: boolean} | null = null;
+
     /** Initializes the dataprovider: runs setup, loads filters, then fetches data or restores from URL state. */
     public async init(): Promise<void> {
         this.setup();
@@ -34,9 +38,21 @@ export abstract class DataproviderBase extends WithItems {
 
         if (this.history === true) {
             await this.loadFromUrlStorage();
-            window.addEventListener("popstate", this.loadFromUrlStorage.bind(this));
+            this.popstateHandler = this.loadFromUrlStorage.bind(this);
+            window.addEventListener("popstate", this.popstateHandler);
         } else {
             await this.load();
+        }
+    }
+
+    /**
+     * Tears down listeners attached to window. Call when removing a dataprovider from the page
+     * (e.g. SPA navigation, modal close) to prevent listener accumulation.
+     */
+    public destroy(): void {
+        if (this.popstateHandler !== null) {
+            window.removeEventListener("popstate", this.popstateHandler);
+            this.popstateHandler = null;
         }
     }
 
@@ -63,11 +79,34 @@ export abstract class DataproviderBase extends WithItems {
      * @param shouldResetPagination - When true, resets to page 1 before fetching.
      * @param keepContents - When true, appends new items instead of clearing existing ones.
      */
-    public async load(shouldResetPagination: boolean = false, keepContents: boolean = false) {
-        if (this.blockLoading || this.loading) {
+    public async load(shouldResetPagination: boolean = false, keepContents: boolean = false): Promise<void> {
+        if (this.blockLoading) {
             return;
         }
 
+        // Coalesce concurrent loads: if one is in flight, remember the latest args
+        // and re-run after current load finishes. Multiple intervening calls collapse
+        // into a single trailing load with the most recent args.
+        if (this.pendingLoad !== null) {
+            this.nextLoadArgs = {shouldResetPagination, keepContents};
+            return this.pendingLoad;
+        }
+
+        this.pendingLoad = this.performLoad(shouldResetPagination, keepContents);
+        try {
+            await this.pendingLoad;
+        } finally {
+            this.pendingLoad = null;
+        }
+
+        if (this.nextLoadArgs !== null) {
+            const args = this.nextLoadArgs;
+            this.nextLoadArgs = null;
+            await this.load(args.shouldResetPagination, args.keepContents);
+        }
+    }
+
+    private async performLoad(shouldResetPagination: boolean, keepContents: boolean): Promise<void> {
         this.loading = true;
         this.showLoadingState();
 
@@ -89,7 +128,7 @@ export abstract class DataproviderBase extends WithItems {
             schemaV3 = true;
             data = rawData.items;
 
-            if (rawData.pagination && this.pagination !== null) {
+            if (rawData.pagination && this.pagination !== null && typeof rawData.pagination.pages === 'number') {
                 this.pages = rawData.pagination.pages;
             }
         } else {

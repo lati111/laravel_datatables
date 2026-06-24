@@ -170,7 +170,11 @@ export abstract class DataproviderCore {
         this.errorCallback = errorCallback;
 
         if (typeof dataprovider === 'string') {
-            dataprovider = document.querySelector('#' + dataprovider + '.dataprovider')!;
+            const found = document.querySelector('#' + dataprovider + '.dataprovider');
+            if (found === null) {
+                throw new DatalistConstructionError('Could not find dataprovider element with ID ' + dataprovider, this.errorCallback);
+            }
+            dataprovider = found;
         }
 
         this.dataprovider = dataprovider;
