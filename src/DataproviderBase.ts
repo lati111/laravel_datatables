@@ -26,7 +26,6 @@ const WithItems = ItemMixin(WithSearch);
  * Subclasses must implement {@link fetchData}, {@link postData}, and {@link createItem}.
  */
 export abstract class DataproviderBase extends WithItems {
-    private popstateHandler: (() => void) | null = null;
     private pendingLoad: Promise<void> | null = null;
     private nextLoadArgs: {shouldResetPagination: boolean, keepContents: boolean} | null = null;
 
@@ -38,22 +37,19 @@ export abstract class DataproviderBase extends WithItems {
 
         if (this.history === true) {
             await this.loadFromUrlStorage();
-            this.popstateHandler = this.loadFromUrlStorage.bind(this);
-            window.addEventListener("popstate", this.popstateHandler);
+            this.listen(window, "popstate", this.loadFromUrlStorage.bind(this));
         } else {
             await this.load();
         }
     }
 
     /**
-     * Tears down listeners attached to window. Call when removing a dataprovider from the page
-     * (e.g. SPA navigation, modal close) to prevent listener accumulation.
+     * Tears down every listener registered via {@link listen}. Call when removing a dataprovider
+     * from the page (e.g. SPA navigation, modal close) to prevent listener accumulation.
+     * After destroy(), the dataprovider is no longer usable.
      */
     public destroy(): void {
-        if (this.popstateHandler !== null) {
-            window.removeEventListener("popstate", this.popstateHandler);
-            this.popstateHandler = null;
-        }
+        this.destroyController.abort();
     }
 
     /** Initializes all DOM elements (body, spinner, pagination, searchbar, filters). Subclasses must call `super.setup()`. */
@@ -70,6 +66,7 @@ export abstract class DataproviderBase extends WithItems {
         this.initPagination();
         this.initSearchbar();
         this.filterSetup();
+        this.initSkeleton();
     }
 
     /**
@@ -112,58 +109,70 @@ export abstract class DataproviderBase extends WithItems {
 
         if (!keepContents) {
             this.body.innerHTML = '';
+            this.renderSkeleton();
         }
 
         if (this.pagination !== null && shouldResetPagination) {
             this.page = 1;
         }
 
-        const url = this.generateDataUrl();
-        const rawData = await this.fetchData(url.toString())
+        try {
+            const url = this.generateDataUrl();
+            const rawData = await this.fetchData(url.toString());
 
-        // schema v3 wraps items and pagination in an envelope object
-        let data: any;
-        let schemaV3 = false;
-        if (rawData !== null && typeof rawData === 'object' && !Array.isArray(rawData) && 'items' in rawData) {
-            schemaV3 = true;
-            data = rawData.items;
-
-            if (rawData.pagination && this.pagination !== null && typeof rawData.pagination.pages === 'number') {
-                this.pages = rawData.pagination.pages;
+            if (!keepContents && this.skeletonTemplate !== null) {
+                this.body.innerHTML = '';
             }
-        } else {
-            data = rawData;
-        }
 
-        let empty = true;
-        let key: keyof typeof data;
-        for (key in data) {
-            this.addItem(data[key]);
-            empty = false;
-        }
+            // schema v3 wraps items and pagination in an envelope object
+            let data: any;
+            let schemaV3 = false;
+            if (rawData !== null && typeof rawData === 'object' && !Array.isArray(rawData) && 'items' in rawData) {
+                schemaV3 = true;
+                data = rawData.items;
 
-        if (empty && !keepContents) {
-            this.body.innerHTML = this.emptyBody;
-        }
+                if (rawData.pagination && this.pagination !== null && typeof rawData.pagination.pages === 'number') {
+                    this.pages = rawData.pagination.pages;
+                }
+            } else {
+                data = rawData;
+            }
 
-        this.hideLoadingState();
+            let empty = true;
+            let key: keyof typeof data;
+            for (key in data) {
+                this.addItem(data[key]);
+                empty = false;
+            }
 
-        if (schemaV3 && this.pagination !== null) {
-            this.renderPagination();
-        } else {
-            await this.fillPagination()
-        }
+            if (empty && !keepContents) {
+                this.body.innerHTML = this.emptyBody;
+            }
 
-        this.pushHistoryState();
+            if (schemaV3 && this.pagination !== null) {
+                this.renderPagination();
+            } else {
+                await this.fillPagination();
+            }
 
-        this.loading = false;
+            this.pushHistoryState();
 
-        if (this.readonly) {
-            this.applyReadonlyMode();
-        }
+            if (this.readonly) {
+                this.applyReadonlyMode();
+            }
 
-        if (this.onLoadFinishedEvent !== null) {
-            this.onLoadFinishedEvent(this)
+            if (this.onLoadFinishedEvent !== null) {
+                this.onLoadFinishedEvent(this);
+            }
+        } catch (err) {
+            // Clear skeleton/placeholder state so the user isn't stranded on a fake body.
+            if (!keepContents) {
+                this.body.innerHTML = this.emptyBody;
+            }
+            throw err;
+        } finally {
+            this.hideLoadingState();
+            this.loading = false;
         }
     }
 

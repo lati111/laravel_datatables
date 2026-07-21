@@ -64,7 +64,7 @@ export function ItemMixin<TBase extends Constructor<DataproviderCore>>(Base: TBa
             if (this.itemActivityKey !== null) {
                 const activityCheckbox = item.querySelector(`[type="checkbox"][name="${this.itemActivityKey}"]`) as HTMLInputElement|null
                 if (activityCheckbox !== null) {
-                    activityCheckbox.addEventListener('change', this.toggleItemActivityEvent.bind(this, activityCheckbox));
+                    this.listen(activityCheckbox, 'change', this.toggleItemActivityEvent.bind(this, activityCheckbox));
                 }
             }
 

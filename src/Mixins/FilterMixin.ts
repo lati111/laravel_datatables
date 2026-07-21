@@ -16,14 +16,14 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
             for (let i = 0; i < checkboxes.length; i++) {
                 const checkbox = checkboxes[i];
-                checkbox.addEventListener('change', this.load.bind(this, true, false))
+                this.listen(checkbox, 'change', this.load.bind(this, true, false));
             }
 
             //inputs
             const inputs = document.querySelectorAll('input.'+this.dataproviderID+'-filter-input:not([type="checkbox"])') as NodeListOf<HTMLInputElement>
             for (let i = 0; i < inputs.length; i++) {
                 const input = inputs[i];
-                input.addEventListener('blur', this.load.bind(this, true, false))
+                this.listen(input, 'blur', this.load.bind(this, true, false));
             }
 
             // setup form
@@ -53,13 +53,13 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                 throw new DatalistConstructionError('Button with id "'+this.dataproviderID+'-filter-confirm-button" is missing #'+this.filterForm.id, this.errorCallback);
             }
 
-            this.addFilterButton.addEventListener('click', this.addFilterEvent.bind(this));
+            this.listen(this.addFilterButton, 'click', this.addFilterEvent.bind(this));
         }
 
         /** Fetches available filters from the server and populates the filter select dropdown. */
         protected async filterInit(): Promise<void> {
             if (this.filterSelect !== null) {
-                const data = await this.fetchData(this.url + '/filters');
+                const data = await this.fetchData(this.buildFilterUrl());
 
                 const filterOption = document.createElement('option')
                 filterOption.textContent = 'Select a filter'
@@ -74,7 +74,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                     this.filterSelect.append(filterOption);
                 }
 
-                this.filterSelect.addEventListener('change', this.onFilterSelectEvent.bind(this));
+                this.listen(this.filterSelect, 'change', this.onFilterSelectEvent.bind(this));
             }
 
             this.resetFilterSelects();
@@ -86,7 +86,10 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
 
             for (const currFilter of this.filters) {
                 if (currFilter.filter === filter && currFilter.operator === operator) {
-                    throw new Error('Duplicate filter error');
+                    throw new DatalistFilterError(
+                        `Duplicate filter: ${filter} ${operator} already active on dataprovider #${this.dataproviderID}`,
+                        this.errorCallback
+                    );
                 }
             }
 
@@ -105,15 +108,13 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
 
         /** Collects all active filters from form entries, checkboxes, and inputs into a single array. */
         protected getFilters(): Array<Filter>{
-            for (let i = 0; i < this.filters.length; i++) {
-                const storedFilter = this.filters[i];
-                if (storedFilter.type === 'checkbox' || storedFilter.type === 'input' || storedFilter.type === 'dataselect') {
-                    this.filters.splice(i, 1)
-                    i--;
-                }
-            }
+            // Persist only form/manual/dataselect-chip filters — checkbox/input/dataselect-value
+            // filters are re-derived from live DOM state on every call so they cannot drift.
+            this.filters = this.filters.filter(
+                f => f.type !== 'checkbox' && f.type !== 'input' && f.type !== 'dataselect'
+            );
 
-            const filters: Array<Filter> = this.filters;
+            const filters: Array<Filter> = [...this.filters];
 
             // Checkbox filters
             const checkboxes = document.querySelectorAll('input[type="checkbox"].'+this.dataproviderID+'-filter-checkbox') as NodeListOf<HTMLInputElement>
@@ -258,7 +259,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             const deleteButton = document.createElement('button');
             deleteButton.innerHTML = this.dataprovider.getAttribute('data-filter-delete-button-content') ?? 'X';
             deleteButton.classList.value = this.dataprovider.getAttribute('data-filter-delete-button-cls') ?? '';
-            deleteButton.addEventListener('click', this.removeFilterEvent.bind(this, container));
+            this.listen(deleteButton, 'click', this.removeFilterEvent.bind(this, container));
             container.append(deleteButton);
 
             return container;
@@ -269,7 +270,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             this.resetFilterSelects();
 
             const filter = this.filterSelect!.value;
-            const data = await this.fetchData(this.url + '/filters?filter='+filter);
+            const data = await this.fetchData(this.buildFilterUrl(filter));
 
             // set operators
             this.operatorSelect!.innerHTML = '';
@@ -295,6 +296,21 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             return element;
         }
 
+        /**
+         * Builds `${this.url}/filters` safely, preserving any existing path/query on `this.url`.
+         * Appends `/filters` to the path (once) and optionally sets a `?filter=` query param.
+         */
+        private buildFilterUrl(filter?: string): string {
+            const url = new URL(this.url, window.location.origin);
+            if (!url.pathname.endsWith('/filters')) {
+                url.pathname = url.pathname.replace(/\/?$/, '/filters');
+            }
+            if (filter !== undefined) {
+                url.searchParams.set('filter', filter);
+            }
+            return url.toString();
+        }
+
         /** Configures the appropriate value input element based on the selected filter's type. */
         protected async performOnfilterSelect(data: DataRecord) {
             switch (data['type']) {
@@ -317,16 +333,21 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                     break;
                 case 'number':
                     const numberInput = this.getFilterFormElement<HTMLInputElement>('input[name="number"][type="number"].filter-value-select', 'Value number input with name `number`');
-                    numberInput.value = (parseInt(data['options']['min']) < 0) ?  '0' : data['options']['min'];
-                    numberInput.max = data['options']['max'];
-                    numberInput.min = data['options']['min'];
+                    const numMin = data['options']?.['min'];
+                    const numMax = data['options']?.['max'];
+                    // Server returns null when there are no rows — default to empty string.
+                    numberInput.min = (numMin === null || numMin === undefined) ? '' : String(numMin);
+                    numberInput.max = (numMax === null || numMax === undefined) ? '' : String(numMax);
+                    numberInput.value = (numMin !== null && numMin !== undefined && parseInt(String(numMin)) >= 0) ? String(numMin) : '0';
                     numberInput.classList.remove('hidden');
                     break;
                 case 'date':
                     const dateInput = this.getFilterFormElement<HTMLInputElement>('input[name="date"][type="date"].filter-value-select', 'Value date input with name `date`');
-                    dateInput.value = '0';
-                    dateInput.max = data['options']['max'];
-                    dateInput.min = data['options']['min'];
+                    const dateMin = data['options']?.['min'];
+                    const dateMax = data['options']?.['max'];
+                    dateInput.value = '';
+                    dateInput.min = (dateMin === null || dateMin === undefined) ? '' : String(dateMin);
+                    dateInput.max = (dateMax === null || dateMax === undefined) ? '' : String(dateMax);
                     dateInput.classList.remove('hidden');
                     break;
             }

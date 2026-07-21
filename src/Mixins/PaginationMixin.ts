@@ -37,7 +37,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             if (prevBtnID !== null) {
                 const prevBtn = document.querySelector('#'+prevBtnID) as HTMLButtonElement|null;
                 if (prevBtn !== null) {
-                    prevBtn.addEventListener('click', this.pageChangeEvent.bind(this))
+                    this.listen(prevBtn, 'click', this.pageChangeEvent.bind(this));
                     this.prevBtn = prevBtn
                 }
             }
@@ -47,7 +47,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             if (nextBtnID !== null) {
                 const nextBtn = document.querySelector('#'+nextBtnID) as HTMLButtonElement|null;
                 if (nextBtn !== null) {
-                    nextBtn.addEventListener('click', this.pageChangeEvent.bind(this))
+                    this.listen(nextBtn, 'click', this.pageChangeEvent.bind(this));
                     this.nextBtn = nextBtn
                 }
             }
@@ -57,7 +57,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             if (perpageSelectorID !== null) {
                 const perpageSelector = document.querySelector('#'+perpageSelectorID) as HTMLSelectElement|null;
                 if (perpageSelector !== null) {
-                    perpageSelector.addEventListener('change', this.perPageChangeEvent.bind(this))
+                    this.listen(perpageSelector, 'change', this.perPageChangeEvent.bind(this));
                     this.perpageSelector = perpageSelector
 
                     if (this.perpageSelector.value !== '') {
@@ -141,9 +141,9 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             if (this.page < pages - this.pagesInPagination) { // show skip to final pages
                 this.paginationContent.append(this.createPaginationDivider());
                 this.paginationContent.append(this.createPaginationNode(pages.toString(), pages))
-            } else { // show right 2 numbers
-                for(let i = pages - 1; i < pages + 1; i++) {
-                    if (i < pages - 2 && i > this.page) {
+            } else { // show 2 more pages right (mirror of the left branch)
+                for (let i = this.page + (this.pagesInPagination - 1); i < this.page + (this.pagesInPagination + 1); i++) {
+                    if (i <= pages && i > this.page) {
                         this.paginationContent.append(this.createPaginationNode(i.toString(), i))
                     } else {
                         this.paginationContent.append(this.createEmptyPaginationNode());
@@ -164,7 +164,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
                 element.classList.add('active');
             }
 
-            element.addEventListener('click', this.pageChangeEvent.bind(this))
+            this.listen(element, 'click', this.pageChangeEvent.bind(this));
             return element;
         }
 

@@ -132,14 +132,25 @@ export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore
         /** Restores dataprovider state from URL query parameters and triggers a data load. */
         public async loadFromUrlStorage():Promise<void> {
             const url = new URL(window.location.href);
-            if (url.searchParams.get(this.dataproviderID) === null) {
+            const raw = url.searchParams.get(this.dataproviderID);
+            if (raw === null) {
                 await this.load();
                 return;
             }
 
-            const data = JSON.parse(url.searchParams.get(this.dataproviderID)!);
-            this.loadDataFromStorage(data);
+            let data: DataRecord;
+            try {
+                data = JSON.parse(raw);
+            } catch (err) {
+                console.warn(
+                    `[Datalist] Malformed state in URL param "${this.dataproviderID}" — ignoring.`,
+                    err
+                );
+                await this.load();
+                return;
+            }
 
+            this.loadDataFromStorage(data);
             await this.load();
         }
     }

@@ -55,7 +55,7 @@ export class Datatable extends AbstractDatalistTemplate {
         this.sortableHeaders = this.dataprovider.querySelectorAll('thead th.datatable-header[data-sortable="true"]');
         for (const header of this.sortableHeaders) {
             const boundFunc = this.toggleSortableHeader.bind(this, header)
-            header.addEventListener('click', boundFunc);
+            this.listen(header, 'click', boundFunc);
         }
 
         // sort header icons
@@ -417,7 +417,7 @@ export class Datatable extends AbstractDatalistTemplate {
             checkbox.checked = true;
         }
 
-        checkbox.addEventListener('click', this.selectItemEvent.bind(this, item));
+        this.listen(checkbox, 'click', this.selectItemEvent.bind(this, item));
         return td;
     }
 

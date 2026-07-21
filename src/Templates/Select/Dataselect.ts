@@ -35,7 +35,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
             throw new DatalistConstructionError('Expand button with id "#' + expandButtonId + '" not found on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
 
-        this.expandButton.addEventListener('click', this.expandEvent.bind(this));
+        this.listen(this.expandButton, 'click', this.expandEvent.bind(this));
 
         const collapseButtonId = this.dataprovider.getAttribute('data-collapse-button-id') ?? this.dataproviderID+'-collapse-button';
         this.collapseButton = document.querySelector('#' + collapseButtonId);
@@ -43,13 +43,13 @@ export class DataSelect extends AbstractDataproviderTemplate {
             throw new DatalistConstructionError('Collapse button with id "#' + collapseButtonId + '" not found on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
 
-        this.collapseButton.addEventListener('click', this.collapseEvent.bind(this));
+        this.listen(this.collapseButton, 'click', this.collapseEvent.bind(this));
 
         // clear button
         const clearButtonId = this.dataprovider.getAttribute('data-clear-button-id') ?? this.dataproviderID+'-clear-button';
         const clearButton = document.querySelector('#' + clearButtonId);
         if (clearButton !== null) {
-            clearButton.addEventListener('click', this.reset.bind(this));
+            this.listen(clearButton, 'click', this.reset.bind(this));
         }
 
         //check identifiers
@@ -68,7 +68,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
 
         //set scroll events
         if (this.dataprovider.getAttribute('data-dynamic-loading') !== 'false') {
-            this.body.addEventListener('scroll', this.scrollEvent.bind(this))
+            this.listen(this.body, 'scroll', this.scrollEvent.bind(this));
         }
 
         //add cls
@@ -90,9 +90,9 @@ export class DataSelect extends AbstractDataproviderTemplate {
             return;
         }
 
-        this.searchbarInput.addEventListener('focus', this.expandEvent.bind(this))
-        this.searchbarInput.addEventListener('blur', this.collapseEvent.bind(this))
-        this.searchbarInput.addEventListener('input', this.searchbarKeystrokeEvent.bind(this))
+        this.listen(this.searchbarInput, 'focus', this.expandEvent.bind(this));
+        this.listen(this.searchbarInput, 'blur', this.collapseEvent.bind(this));
+        this.listen(this.searchbarInput, 'input', this.searchbarKeystrokeEvent.bind(this));
     }
 
     /** @inheritDoc */
@@ -243,8 +243,8 @@ export class DataSelect extends AbstractDataproviderTemplate {
         content.textContent = data[this.itemLabelKey!]
         item.append(content);
 
-        item.addEventListener('mousedown', this.preventMousedownEvent.bind(this))
-        item.addEventListener('click', this.selectEvent.bind(this, content))
+        this.listen(item, 'mousedown', this.preventMousedownEvent.bind(this));
+        this.listen(item, 'click', this.selectEvent.bind(this, content));
 
         return item;
     }

@@ -27,14 +27,12 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
                 url.searchParams.set('filters', JSON.stringify(filterData));
             }
 
-            if (Object.keys(this.customSelectProperties).length > 0) {
-                let columnString = '';
-                for (let i = 0; i < Object.keys(this.customSelectProperties).length; i++) {
-                    const column = Object.keys(this.customSelectProperties)[i];
-                    const value = this.customSelectProperties[column];
-                    columnString += (i === 0 ? '' : ',')+`${column}=`+(value ? '1' : '0');
-                }
-
+            const columnKeys = Object.keys(this.customSelectProperties);
+            if (columnKeys.length > 0) {
+                // Encode each column name to survive commas/equals/whitespace in identifiers.
+                const columnString = columnKeys
+                    .map(column => `${encodeURIComponent(column)}=${this.customSelectProperties[column] ? '1' : '0'}`)
+                    .join(',');
                 url.searchParams.set('columns', columnString);
             }
 
@@ -57,11 +55,11 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
             }
         }
 
-        /** Replaces placeholder tokens in a URL string with the provided values. */
+        /** Replaces placeholder tokens in a URL string with the provided values. Replaces all occurrences. */
         protected changeUrl(url:string, replacers:{[key:string]:string}): string {
             let key: keyof typeof replacers;
             for (key in replacers) {
-                url = url.replace(key, replacers[key])
+                url = url.split(key).join(replacers[key]);
             }
 
             return url;

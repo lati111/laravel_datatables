@@ -9,6 +9,16 @@
  */
 import {ColumnHandler} from "./ColumnHandler";
 
+/** Escapes a string for safe insertion into HTML. */
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 export class Column {
     public header:HTMLElement|null = null;
     public name:string;
@@ -71,18 +81,18 @@ export class Column {
 
         // set the contents
         if (typeof this.handler?.setter === 'function') {
-            // through setter
+            // Setter is responsible for safe rendering; format is trusted server-defined markup.
             if (this.format !== null) {
                 container.innerHTML = this.format;
             }
 
             this.handler.set(td, value, data);
         } else if (this.format !== null) {
-            // through format
-            container.innerHTML = this.format.replace(/\[value]/gmi, value);
+            // Format template is trusted server markup; the substituted value is user data.
+            container.innerHTML = this.format.replace(/\[value]/gmi, escapeHtml(String(value)));
         } else {
-            // through plain text
-            container.innerHTML = value;
+            // Never treat raw data as HTML.
+            container.textContent = String(value);
         }
 
         // return td without wrapper

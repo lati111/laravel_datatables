@@ -24,6 +24,12 @@ export abstract class DataproviderCore {
     /** Optional error handler invoked by datalist exceptions before they throw. */
     protected errorCallback: ErrorCallback;
 
+    /**
+     * AbortController used to detach every event listener registered via {@link listen}.
+     * Aborting it (in {@link DataproviderBase.destroy}) removes all listeners in a single call.
+     */
+    protected destroyController: AbortController = new AbortController();
+
     /** Whether to persist and restore state via URL query parameters. */
     protected history: boolean = true;
 
@@ -50,6 +56,12 @@ export abstract class DataproviderCore {
 
     /** Optional spinner element shown during data fetches. */
     protected spinner: Element | null = null;
+
+    /** Optional template element cloned to render skeleton placeholders during data fetches. */
+    protected skeletonTemplate: Element | null = null;
+
+    /** Number of skeleton placeholders to render while loading. */
+    protected skeletonCount: number = 5;
 
     /** Optional wrapper element that gets a `disabled` attribute during loads. */
     public disableContainer: Element | null = null;
@@ -170,8 +182,8 @@ export abstract class DataproviderCore {
         this.errorCallback = errorCallback;
 
         if (typeof dataprovider === 'string') {
-            const found = document.querySelector('#' + dataprovider + '.dataprovider');
-            if (found === null) {
+            const found = document.getElementById(dataprovider);
+            if (found === null || !found.classList.contains('dataprovider')) {
                 throw new DatalistConstructionError('Could not find dataprovider element with ID ' + dataprovider, this.errorCallback);
             }
             dataprovider = found;
@@ -219,6 +231,64 @@ export abstract class DataproviderCore {
     }
 
     /**
+     * Initializes the skeleton template element and placeholder count from DOM attributes.
+     * Reads `data-skeleton-template-ID` (defaults to `[dataproviderID]-skeleton-template`)
+     * and `data-skeleton-count` (defaults to `perpage` if set, otherwise 5).
+     */
+    protected initSkeleton() {
+        const templateElement = this.resolveElement('data-skeleton-template-ID', '-skeleton-template');
+        if (templateElement === null) {
+            return;
+        }
+
+        this.skeletonTemplate = templateElement;
+
+        const countAttr = this.dataprovider.getAttribute('data-skeleton-count');
+        if (countAttr !== null) {
+            const parsed = parseInt(countAttr);
+            if (!isNaN(parsed) && parsed > 0) {
+                this.skeletonCount = parsed;
+                return;
+            }
+        }
+
+        if (this.perpage !== null && this.perpage > 0) {
+            this.skeletonCount = this.perpage;
+        }
+    }
+
+    /**
+     * Clones the skeleton template into the body {@link skeletonCount} times.
+     * Supports both `<template>` elements (cloned via `.content`) and regular elements.
+     * No-op when no skeleton template is configured.
+     */
+    protected renderSkeleton() {
+        if (this.skeletonTemplate === null) {
+            return;
+        }
+
+        const isHtmlTemplate = this.skeletonTemplate instanceof HTMLTemplateElement;
+
+        for (let i = 0; i < this.skeletonCount; i++) {
+            if (isHtmlTemplate) {
+                const fragment = (this.skeletonTemplate as HTMLTemplateElement).content.cloneNode(true) as DocumentFragment;
+                fragment.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                Array.from(fragment.children).forEach(child => {
+                    child.classList.remove('hidden');
+                    child.classList.add('datalist-skeleton');
+                });
+                this.body.append(fragment);
+            } else {
+                const clone = this.skeletonTemplate.cloneNode(true) as HTMLElement;
+                clone.removeAttribute('id');
+                clone.classList.remove('hidden');
+                clone.classList.add('datalist-skeleton');
+                this.body.append(clone);
+            }
+        }
+    }
+
+    /**
      * Resolves a DOM element by reading an ID from a data attribute with a default fallback.
      *
      * @param attrName - Data attribute name on the dataprovider element (e.g. `data-content-ID`).
@@ -231,7 +301,20 @@ export abstract class DataproviderCore {
         selector: string = ''
     ): T | null {
         const id = this.dataprovider.getAttribute(attrName) ?? this.dataproviderID + defaultSuffix;
-        return document.querySelector('#' + id + selector) as T | null;
+        const element = document.getElementById(id) as T | null;
+        if (element === null || selector === '') {
+            return element;
+        }
+        // Extra selector (e.g. `.spinner`) must match on the found element.
+        return element.matches(selector) ? element : null;
+    }
+
+    /**
+     * Registers an event listener that is automatically detached when the dataprovider is destroyed.
+     * Prefer this over `target.addEventListener(...)` for anything longer-lived than a single click.
+     */
+    protected listen(target: EventTarget, type: string, handler: EventListenerOrEventListenerObject, options: AddEventListenerOptions = {}): void {
+        target.addEventListener(type, handler, { ...options, signal: this.destroyController.signal });
     }
 
     /** Formats a snake_case string to title case (replaces underscores with spaces, capitalizes first letter). */

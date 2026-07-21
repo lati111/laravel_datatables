@@ -95,7 +95,7 @@ export class DatatableSelector extends Datatable {
             button.classList.value = this.selectList.getAttribute('data-item-close-button-cls') ?? '';
             button.classList.add('data-item-readonly-sensitive');
             button.classList.add('hidden-when-readonly');
-            button.addEventListener('click', this.removeSelectedItemEvent.bind(this, item.identifier));
+            this.listen(button, 'click', this.removeSelectedItemEvent.bind(this, item.identifier));
             button.innerHTML =  this.selectList.getAttribute('data-item-close-button-content') ?? '<span>X</span>';
             element.append(button)
 

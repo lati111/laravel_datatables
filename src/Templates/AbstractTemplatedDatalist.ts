@@ -1,5 +1,4 @@
 import {DatalistConstructionError} from "../Exceptions/DatalistConstructionError";
-import {DatalistLoadingError} from "../Exceptions/DatalistLoadingError";
 import { AbstractDatalistTemplate } from "./AbstractDatalistTemplate";
 
 /** Clones an HTML template element and binds data values to inputs, selects, spans, and images. Extends {@link AbstractDatalistTemplate}. */
@@ -64,7 +63,12 @@ export class AbstractTemplatedDatalist extends AbstractDatalistTemplate {
                 if (select !== null && value !== null) {
                     const option = select.querySelector(`option[value="${value}"]`) as HTMLOptionElement|null;
                     if (option === null) {
-                        throw new DatalistLoadingError(`Option with value "${value}" does not exist on select "${key}"`, this.errorCallback)
+                        // Legacy/renamed values shouldn't kill the whole render — warn and skip.
+                        console.warn(
+                            `[Datalist] Option with value "${value}" does not exist on select "${key}" ` +
+                            `(dataprovider #${this.dataproviderID}) — leaving current selection.`
+                        );
+                        continue;
                     }
 
                     select.querySelector(`option`)?.removeAttribute('selected');

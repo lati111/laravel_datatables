@@ -21,7 +21,7 @@ export function SearchMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             const searchBtnID = searchbarElement.getAttribute('data-confirm-button-ID') ?? this.dataproviderID + '-search-confirm-button'
             const searchBtnElement = document.querySelector('#'+searchBtnID) as HTMLButtonElement|null;
             if (searchBtnElement !== null) {
-                searchBtnElement.addEventListener('click', loadFunc)
+                this.listen(searchBtnElement, 'click', loadFunc);
                 this.searchbarConfirmButton = searchBtnElement
             }
 
@@ -33,7 +33,7 @@ export function SearchMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                     searchInputElement = this.searchbar as HTMLInputElement;
                 }
 
-                searchInputElement.addEventListener('keypress', loadFunc)
+                this.listen(searchInputElement, 'keypress', loadFunc);
                 this.searchbarInput = searchInputElement
             }
         }

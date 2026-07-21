@@ -141,7 +141,7 @@ export class DatatableForm extends Datatable {
         button.classList.add('hidden-when-readonly');
 
         button.innerHTML = this.saveButtonContent;
-        button.addEventListener('click', this.saveRow.bind(this, row));
+        this.listen(button, 'click', this.saveRow.bind(this, row));
         
         const wrapper = buttonCell.querySelector('.data-item-wrapper');
         if (wrapper !== null) {
