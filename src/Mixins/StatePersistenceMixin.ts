@@ -45,10 +45,10 @@ export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore
                 }
             }
 
-            if (this.searchbar !== null) {
-                if (data.searchterm !== undefined) {
-                    this.searchbarInput!.value = data.searchterm
-                    this.searchterm = data.searchterm;
+            if (this.searchbar !== null && data.searchterm !== undefined) {
+                this.searchterm = data.searchterm;
+                if (this.searchbarInput !== null) {
+                    this.searchbarInput.value = data.searchterm;
                 }
             }
 

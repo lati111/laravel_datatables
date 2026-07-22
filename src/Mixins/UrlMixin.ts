@@ -9,7 +9,8 @@ export function UrlMixin<TBase extends Constructor<DataproviderCore>>(Base: TBas
     abstract class WithUrl extends Base {
         /** Builds a complete API request URL with pagination, search, filter, and column parameters. */
         public generateDataUrl(baseUrl:string = this.url):URL {
-            let url = new URL(baseUrl);
+            // Accept both absolute and relative URLs — resolve relative ones against the page origin.
+            let url = new URL(baseUrl, typeof window !== 'undefined' ? window.location.href : 'http://localhost/');
 
             url.searchParams.set('schema', '3');
 

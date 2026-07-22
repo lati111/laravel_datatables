@@ -4,7 +4,9 @@
   "description": "A typescript library to create datatables based off the lati111/laravel_dataproviders composer package",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "repository": {
     "type": "git",
@@ -18,5 +20,10 @@
   "homepage": "https://github.com/lati111/laravel_datatables#readme",
   "dependencies": {
     "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.0",
+    "jsdom": "^25.0.0",
+    "vitest": "^2.1.0"
   }
 }
