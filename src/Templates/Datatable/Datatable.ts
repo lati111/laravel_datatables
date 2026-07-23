@@ -1,5 +1,6 @@
 import {Column} from "./Data/Column";
 import {ColumnHandler} from "./Data/ColumnHandler";
+import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 import {DatalistError} from "../../Exceptions/DatalistError";
 import {Item} from "./Data/Item";
 import {AbstractDatalistTemplate} from "../AbstractDatalistTemplate";
@@ -75,6 +76,14 @@ export class Datatable extends AbstractDatalistTemplate {
      * @return void
      */
     protected setupSelectionMode() {
+        // Selection mode requires an identifier key so we can key selected items.
+        if (this.itemIdentifierKey === null) {
+            throw new DatalistConstructionError(
+                `Attribute "data-identifier-key" is required when data-selection-mode="true" on datatable "#${this.dataproviderID}"`,
+                this.errorCallback
+            );
+        }
+
         //create checkbox header
         const th = document.createElement('th');
         th.classList.value = this.dataprovider.getAttribute('data-checkbox-header-cls') ?? '';
@@ -82,7 +91,7 @@ export class Datatable extends AbstractDatalistTemplate {
 
         // setup action bar
         const actionbarID = this.dataprovider.getAttribute('data-actionbar-id') ?? this.dataproviderID + '-action-bar';
-        this.actionbar = document.querySelector('#'+actionbarID);
+        this.actionbar = document.getElementById(actionbarID);
         this.actionbar?.classList.add('hidden');
     }
 
@@ -199,6 +208,7 @@ export class Datatable extends AbstractDatalistTemplate {
                 break;
         }
 
+        this.userInitiatedLoad = true;
         this.load(true);
     }
 
@@ -304,7 +314,20 @@ export class Datatable extends AbstractDatalistTemplate {
         super.loadDataFromStorage(data);
 
         if (this.sortableHeaders !== null && data.sort !== undefined) {
-            const sorts = JSON.parse(data.sort);
+            let sorts: {[key: string]: string};
+            try {
+                sorts = JSON.parse(data.sort);
+            } catch (err) {
+                console.warn(
+                    `[Datatable] Malformed sort state in URL param for #${this.dataproviderID} — ignoring.`,
+                    err
+                );
+                return;
+            }
+
+            if (sorts === null || typeof sorts !== 'object') {
+                return;
+            }
 
             for (let i = 0; i < this.sortableHeaders.length; i++) {
                 const header = this.sortableHeaders[i] as Element;

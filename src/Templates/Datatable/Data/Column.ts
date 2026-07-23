@@ -95,12 +95,7 @@ export class Column {
             container.textContent = String(value);
         }
 
-        // return td without wrapper
-        if (this.wrapperCls === null) {
-            return container as HTMLTableCellElement;
-        }
-
-        // return td with wrapper
+        // Always return the <td>. When wrapperCls is null, container === td, so this is a no-op cast.
         return td;
     }
 

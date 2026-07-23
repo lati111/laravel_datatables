@@ -28,6 +28,7 @@ const WithItems = ItemMixin(WithSearch);
 export abstract class DataproviderBase extends WithItems {
     private pendingLoad: Promise<void> | null = null;
     private nextLoadArgs: {shouldResetPagination: boolean, keepContents: boolean} | null = null;
+    private destroyed: boolean = false;
 
     /** Initializes the dataprovider: runs setup, loads filters, then fetches data or restores from URL state. */
     public async init(): Promise<void> {
@@ -46,9 +47,10 @@ export abstract class DataproviderBase extends WithItems {
     /**
      * Tears down every listener registered via {@link listen}. Call when removing a dataprovider
      * from the page (e.g. SPA navigation, modal close) to prevent listener accumulation.
-     * After destroy(), the dataprovider is no longer usable.
+     * After destroy(), the dataprovider is no longer usable; subsequent load() calls no-op.
      */
     public destroy(): void {
+        this.destroyed = true;
         this.destroyController.abort();
     }
 
@@ -77,7 +79,7 @@ export abstract class DataproviderBase extends WithItems {
      * @param keepContents - When true, appends new items instead of clearing existing ones.
      */
     public async load(shouldResetPagination: boolean = false, keepContents: boolean = false): Promise<void> {
-        if (this.blockLoading) {
+        if (this.blockLoading || this.destroyed) {
             return;
         }
 
@@ -107,6 +109,13 @@ export abstract class DataproviderBase extends WithItems {
         this.loading = true;
         this.showLoadingState();
 
+        // Snapshot the user-initiated flag and clear it immediately: the flag semantics are
+        // "the load starting now originated from user action". Clearing here means a load
+        // that fails or bypasses pushHistoryState (history=false) doesn't leak the flag into
+        // subsequent programmatic loads.
+        const isUserInitiated = this.userInitiatedLoad;
+        this.userInitiatedLoad = false;
+
         if (!keepContents) {
             this.body.innerHTML = '';
             this.renderSkeleton();
@@ -124,15 +133,24 @@ export abstract class DataproviderBase extends WithItems {
                 this.body.innerHTML = '';
             }
 
-            // schema v3 wraps items and pagination in an envelope object
+            // schema v3 wraps items and pagination in an envelope object. Require BOTH
+            // the `items` key AND at least one other envelope key (`pagination` or `filters`),
+            // or an explicit items-array shape, to avoid misinterpreting a legacy payload that
+            // happens to contain an `items` property.
             let data: any;
             let schemaV3 = false;
             if (rawData !== null && typeof rawData === 'object' && !Array.isArray(rawData) && 'items' in rawData) {
-                schemaV3 = true;
-                data = rawData.items;
+                const hasEnvelopeMarker = 'pagination' in rawData || 'filters' in rawData;
+                const itemsLooksArrayish = Array.isArray(rawData.items) || (typeof rawData.items === 'object' && rawData.items !== null);
+                if (hasEnvelopeMarker || itemsLooksArrayish) {
+                    schemaV3 = true;
+                    data = rawData.items;
 
-                if (rawData.pagination && this.pagination !== null && typeof rawData.pagination.pages === 'number') {
-                    this.pages = rawData.pagination.pages;
+                    if (rawData.pagination && this.pagination !== null && typeof rawData.pagination.pages === 'number') {
+                        this.pages = rawData.pagination.pages;
+                    }
+                } else {
+                    data = rawData;
                 }
             } else {
                 data = rawData;
@@ -155,7 +173,7 @@ export abstract class DataproviderBase extends WithItems {
                 await this.fillPagination();
             }
 
-            this.pushHistoryState();
+            this.pushHistoryState(isUserInitiated);
 
             if (this.readonly) {
                 this.applyReadonlyMode();
@@ -200,12 +218,20 @@ export abstract class DataproviderBase extends WithItems {
         }
     }
 
-    private pushHistoryState(): void {
+    private pushHistoryState(isUserInitiated: boolean): void {
         if (this.history !== true) {
             return;
         }
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set(this.dataproviderID, JSON.stringify(this.getStorableData()));
-        window.history.pushState({urlPath: currentUrl.toString()}, '', currentUrl.toString());
+
+        // User-initiated loads (pagination click, filter change, search submit) push a new
+        // history entry; programmatic loads (init, popstate replay, dynamic URL) replace the
+        // current entry so the back button doesn't need to walk through every auto-load.
+        if (isUserInitiated) {
+            window.history.pushState({urlPath: currentUrl.toString()}, '', currentUrl.toString());
+        } else {
+            window.history.replaceState({urlPath: currentUrl.toString()}, '', currentUrl.toString());
+        }
     }
 }

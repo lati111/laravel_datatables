@@ -6,7 +6,11 @@ export class Filter {
     /** The DOM element displaying this filter as a removable chip, if any. */
     public displayElement: HTMLElement|null = null;
 
-    /** Human-readable label shown in the filter display chip. */
+    /**
+     * Human-readable label shown in the filter display chip.
+     * Only populated for `form`, `manual` and `dataselect` filters; checkbox/input filters
+     * have no chip (they mirror DOM state) so this stays null for those types.
+     */
     public display: string|null;
 
     /** Column name this filter applies to. */

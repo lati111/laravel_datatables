@@ -48,6 +48,13 @@ export abstract class DataproviderCore {
     /** Guard flag to prevent concurrent loads. */
     protected loading: boolean = false;
 
+    /**
+     * Set by user-facing event handlers (pagination click, filter add/remove, search submit)
+     * so the resulting load pushes a new history entry. Programmatic loads (init, popstate,
+     * dynamic URL) leave this false so the entry is replaced.
+     */
+    protected userInitiatedLoad: boolean = false;
+
     /** The container element where data items are rendered. */
     public body: Element;
 
@@ -192,6 +199,12 @@ export abstract class DataproviderCore {
         this.dataprovider = dataprovider;
         this.dataproviderID = dataprovider.id;
 
+        // Every default-suffix resolveElement lookup (spinner, content, pagination, etc.) uses
+        // dataproviderID as its prefix; an empty id makes every lookup ambiguous or fails.
+        if (this.dataproviderID === '') {
+            throw new DatalistConstructionError('Dataprovider element must have a non-empty id attribute', this.errorCallback);
+        }
+
         const dataUrl = this.dataprovider.getAttribute('data-content-url');
         if (dataUrl === null) {
             throw new DatalistConstructionError('Could not find attribute data-content-url on dataprovider with ID ' + this.dataproviderID, this.errorCallback);
@@ -233,7 +246,8 @@ export abstract class DataproviderCore {
     /**
      * Initializes the skeleton template element and placeholder count from DOM attributes.
      * Reads `data-skeleton-template-ID` (defaults to `[dataproviderID]-skeleton-template`)
-     * and `data-skeleton-count` (defaults to `perpage` if set, otherwise 5).
+     * and `data-skeleton-count` (accepts 0 to explicitly disable, defaults to `perpage`
+     * when set, otherwise 5).
      */
     protected initSkeleton() {
         const templateElement = this.resolveElement('data-skeleton-template-ID', '-skeleton-template');
@@ -246,7 +260,7 @@ export abstract class DataproviderCore {
         const countAttr = this.dataprovider.getAttribute('data-skeleton-count');
         if (countAttr !== null) {
             const parsed = parseInt(countAttr);
-            if (!isNaN(parsed) && parsed > 0) {
+            if (!isNaN(parsed) && parsed >= 0) {
                 this.skeletonCount = parsed;
                 return;
             }

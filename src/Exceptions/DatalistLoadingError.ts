@@ -1,5 +1,5 @@
-import {DatalistError} from "./DatalistError";
-import {DatalistErrorWithCallback} from "./DatalistErrorWithCallback";
+import { DatalistError } from './DatalistError';
 
-export class DatalistLoadingError extends DatalistErrorWithCallback {
+/** Thrown when a load or render step encounters an unrecoverable error. */
+export class DatalistLoadingError extends DatalistError {
 }

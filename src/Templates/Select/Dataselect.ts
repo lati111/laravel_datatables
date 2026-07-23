@@ -30,7 +30,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
 
         // expand/collapse buttons
         const expandButtonId = this.dataprovider.getAttribute('data-expand-button-id') ?? this.dataproviderID+'-expand-button';
-        this.expandButton = document.querySelector('#' + expandButtonId);
+        this.expandButton = document.getElementById(expandButtonId);
         if (this.expandButton === null) {
             throw new DatalistConstructionError('Expand button with id "#' + expandButtonId + '" not found on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
@@ -38,7 +38,7 @@ export class DataSelect extends AbstractDataproviderTemplate {
         this.listen(this.expandButton, 'click', this.expandEvent.bind(this));
 
         const collapseButtonId = this.dataprovider.getAttribute('data-collapse-button-id') ?? this.dataproviderID+'-collapse-button';
-        this.collapseButton = document.querySelector('#' + collapseButtonId);
+        this.collapseButton = document.getElementById(collapseButtonId);
         if (this.collapseButton === null) {
             throw new DatalistConstructionError('Collapse button with id "#' + collapseButtonId + '" not found on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
@@ -47,19 +47,23 @@ export class DataSelect extends AbstractDataproviderTemplate {
 
         // clear button
         const clearButtonId = this.dataprovider.getAttribute('data-clear-button-id') ?? this.dataproviderID+'-clear-button';
-        const clearButton = document.querySelector('#' + clearButtonId);
+        const clearButton = document.getElementById(clearButtonId);
         if (clearButton !== null) {
             this.listen(clearButton, 'click', this.reset.bind(this));
         }
 
         //check identifiers
         if (this.itemIdentifierKey === null) {
-            throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"', this.errorCallback)
+            throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
+        }
+
+        // The searchbar element is required — it doubles as the selected-value display.
+        if (this.searchbar === null) {
+            throw new DatalistConstructionError('Searchbar element is required on dataselector "#' + this.dataproviderID + '" (add a `.searchbar` sibling element or set data-searchbar-ID)', this.errorCallback);
         }
 
         this.defaultLabel = this.dataprovider.getAttribute('data-default-label') ?? '';
-        const searchbar = this.searchbar as HTMLInputElement;
-        searchbar.value = this.defaultLabel;
+        (this.searchbar as HTMLInputElement).value = this.defaultLabel;
 
         //set default hiding position
         this.body.classList.add('hidden');
@@ -168,7 +172,16 @@ export class DataSelect extends AbstractDataproviderTemplate {
         this.expandButton!.classList.add('hidden');
         this.collapseButton!.classList.remove('hidden');
 
-        await this.load(true);
+        try {
+            await this.load(true);
+        } catch (err) {
+            // Load failed — snap the buttons back so the user isn't stuck with a collapse
+            // button that opens nothing. Rethrow so the errorCallback still fires.
+            this.expandButton!.classList.remove('hidden');
+            this.collapseButton!.classList.add('hidden');
+            throw err;
+        }
+
         this.body.classList.remove('hidden');
 
         if (this.searchbar !== null) {
@@ -236,6 +249,8 @@ export class DataSelect extends AbstractDataproviderTemplate {
     protected createItem(data: { [key: string]: any }): HTMLElement {
         const item = document.createElement('div');
         item.classList.value = this.optionCls;
+        // Stable marker so generateDataUrl can count only real options for the offset.
+        item.classList.add('dataselect-option');
 
         const content = document.createElement('a');
         content.classList.value = this.optionContentCls;
@@ -252,7 +267,10 @@ export class DataSelect extends AbstractDataproviderTemplate {
     /** @inheritDoc */
     public generateDataUrl(baseUrl: string = this.url): URL {
         const url = super.generateDataUrl(baseUrl);
-        url.searchParams.set('offset', "" + this.body.children.length);
+        // Count only rendered option items — ignore skeleton clones, dividers, or
+        // any other bookkeeping children the body may contain.
+        const optionCount = this.body.querySelectorAll('.dataselect-option').length;
+        url.searchParams.set('offset', "" + optionCount);
 
         return url;
     }
