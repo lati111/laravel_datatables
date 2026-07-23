@@ -1,5 +1,5 @@
-import {DatalistError} from "./DatalistError";
-import {DatalistErrorWithCallback} from "./DatalistErrorWithCallback";
+import { DatalistError } from './DatalistError';
 
-export class DatalistFilterError extends DatalistErrorWithCallback {
+/** Thrown when an invalid or duplicate filter is applied. */
+export class DatalistFilterError extends DatalistError {
 }

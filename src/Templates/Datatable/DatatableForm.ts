@@ -63,10 +63,17 @@ export class DatatableForm extends Datatable {
     }
 
     /** @inheritDoc */
-    public async load(shouldResetPagination: boolean = false) {
-        await super.load(shouldResetPagination);
+    public async load(shouldResetPagination: boolean = false, keepContents: boolean = false) {
+        // Snapshot pendingLoad BEFORE calling super: if it's non-null, our call is being
+        // coalesced onto an in-flight load and we must NOT add another empty row when the
+        // shared promise resolves — the "owning" call will do it.
+        const wasCoalesced = (this as any).pendingLoad !== null;
 
-        if (this.addsNewRow) {
+        await super.load(shouldResetPagination, keepContents);
+
+        // Skip when this call was coalesced (deduplicates row inserts across rapid load() calls)
+        // and when the caller is appending items (keepContents), which is not a full re-render.
+        if (this.addsNewRow && !wasCoalesced && !keepContents) {
             this.addNewItem();
         }
     }
@@ -129,7 +136,14 @@ export class DatatableForm extends Datatable {
             if (column === null || column === undefined) {
                 row.append(buttonCell)
             } else {
-                buttonCell = row.children[column.index] as HTMLTableCellElement
+                const existingCell = row.children[column.index] as HTMLTableCellElement | undefined;
+                if (existingCell === undefined) {
+                    throw new DatalistError(
+                        `Button column "${this.buttonColumn}" (index ${column.index}) is out of range on datatable form #${this.dataproviderID}`,
+                        this.errorCallback
+                    );
+                }
+                buttonCell = existingCell;
             }
         } else {
             row.append(buttonCell)

@@ -5,6 +5,17 @@
 import type {DataproviderCore} from "../DataproviderCore";
 import type {Constructor, DataRecord} from "./types";
 
+/**
+ * Escapes a string for safe use inside an attribute-selector value. Prefers native CSS.escape
+ * with a minimal fallback for jsdom pre-25 and non-browser environments.
+ */
+function escapeSelector(value: string): string {
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+        return CSS.escape(value);
+    }
+    return value.replace(/(["'\\\]\[])/g, '\\$1');
+}
+
 export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore>>(Base: TBase) {
     abstract class WithStatePersistence extends Base {
         /** Collects the current pagination, search, and filter state into a serializable object. */
@@ -105,7 +116,9 @@ export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore
                     }
                     break;
                 case 'checkbox':
-                    const filterCheckbox = document.querySelector('input[type="checkbox"][name="'+filter['filter']+'"].'+this.dataproviderID+'-filter-checkbox') as HTMLInputElement|null;
+                    // The filter name comes from URL state so a malformed/malicious value could
+                    // break the selector; escape it before splicing into a CSS attribute selector.
+                    const filterCheckbox = document.querySelector('input[type="checkbox"][name="'+escapeSelector(filter['filter'])+'"].'+this.dataproviderID+'-filter-checkbox') as HTMLInputElement|null;
                     if (filterCheckbox === null) {
                         return;
                     }
@@ -119,12 +132,13 @@ export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore
                     }
                     break;
                 case 'input':
-                    const filterInput = document.querySelector('input[name="'+filter['filter']+'"].'+this.dataproviderID+'-filter-input:not([type="checkbox"])') as HTMLInputElement|null;
+                    const filterInput = document.querySelector('input[name="'+escapeSelector(filter['filter'])+'"].'+this.dataproviderID+'-filter-input:not([type="checkbox"])') as HTMLInputElement|null;
                     if (filterInput === null) {
                         return;
                     }
 
-                    filterInput.value = filter['value'];
+                    // Coerce null to empty string so we don't render the literal text "null".
+                    filterInput.value = filter['value'] ?? '';
                     break;
             }
         }
@@ -138,7 +152,7 @@ export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore
                 return;
             }
 
-            let data: DataRecord;
+            let data: unknown;
             try {
                 data = JSON.parse(raw);
             } catch (err) {
@@ -150,7 +164,17 @@ export function StatePersistenceMixin<TBase extends Constructor<DataproviderCore
                 return;
             }
 
-            this.loadDataFromStorage(data);
+            // JSON.parse('null') or 'true' or '42' is valid JSON but not a state object.
+            // Guard against these so downstream `data.page` etc. don't crash on primitives.
+            if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+                console.warn(
+                    `[Datalist] URL state for "${this.dataproviderID}" is not a state object — ignoring.`
+                );
+                await this.load();
+                return;
+            }
+
+            this.loadDataFromStorage(data as DataRecord);
             await this.load();
         }
     }

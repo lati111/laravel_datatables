@@ -1,5 +1,5 @@
-import {DatalistError} from "./DatalistError";
-import {DatalistErrorWithCallback} from "./DatalistErrorWithCallback";
+import { DatalistError } from './DatalistError';
 
-export class DatalistConstructionError extends DatalistErrorWithCallback {
+/** Thrown when a dataprovider cannot be initialized (missing element, attribute, etc.). */
+export class DatalistConstructionError extends DatalistError {
 }

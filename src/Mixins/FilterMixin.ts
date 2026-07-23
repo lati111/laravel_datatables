@@ -48,10 +48,11 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             }
 
             // filter confirm button
-            this.addFilterButton = document.querySelector('button#'+this.dataproviderID+'-filter-confirm-button');
-            if (this.addFilterButton === null) {
+            const confirmButton = document.getElementById(this.dataproviderID+'-filter-confirm-button') as HTMLButtonElement|null;
+            if (confirmButton === null || confirmButton.tagName !== 'BUTTON') {
                 throw new DatalistConstructionError('Button with id "'+this.dataproviderID+'-filter-confirm-button" is missing #'+this.filterForm.id, this.errorCallback);
             }
+            this.addFilterButton = confirmButton;
 
             this.listen(this.addFilterButton, 'click', this.addFilterEvent.bind(this));
         }
@@ -101,6 +102,9 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                 this.filterAddedEvent(this, filterItem);
             }
 
+            if (!init) {
+                this.userInitiatedLoad = true;
+            }
             this.load(true, false);
 
             return true;
@@ -276,7 +280,8 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
             this.operatorSelect!.innerHTML = '';
             this.operatorSelect?.classList.remove('hidden');
 
-            for (const operator of data['operators']) {
+            const operators = Array.isArray(data['operators']) ? data['operators'] : [];
+            for (const operator of operators) {
                 const operatorOption = document.createElement('option');
                 operatorOption.value = operator['operator'];
                 operatorOption.textContent = operator['text'];
@@ -319,7 +324,8 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                     select.classList.remove('hidden');
                     select.innerHTML = '';
 
-                    for (const selectData of data['options']) {
+                    const options = Array.isArray(data['options']) ? data['options'] : [];
+                    for (const selectData of options) {
                         const option = document.createElement('option');
                         option.value = selectData;
                         option.textContent = selectData;
@@ -408,6 +414,7 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                 if (filterData.displayElement === filterElement) {
                     this.filters.splice(i, 1);
                     filterElement.remove();
+                    this.userInitiatedLoad = true;
                     await this.load(true, false);
                     return;
                 }
@@ -425,6 +432,9 @@ export function FilterMixin<TBase extends Constructor<DataproviderCore>>(Base: T
                     this.filterAddedEvent(this, filterItem);
                 }
 
+                // Consumers calling this publicly are effectively initiating a user-visible
+                // change, so treat it as user-initiated for history-push purposes.
+                this.userInitiatedLoad = true;
                 this.load(true, false);
             }
 

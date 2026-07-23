@@ -26,7 +26,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             //content init
             const contentID = paginationElement.getAttribute('data-content-ID')
             if (contentID !== null) {
-                const contentElement = document.querySelector('#'+contentID);
+                const contentElement = document.getElementById(contentID);
                 if (contentElement !== null) {
                     this.paginationContent = contentElement
                 }
@@ -35,7 +35,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             //previous page button init
             const prevBtnID = paginationElement.getAttribute('data-previous-page-button-ID')
             if (prevBtnID !== null) {
-                const prevBtn = document.querySelector('#'+prevBtnID) as HTMLButtonElement|null;
+                const prevBtn = document.getElementById(prevBtnID) as HTMLButtonElement|null;
                 if (prevBtn !== null) {
                     this.listen(prevBtn, 'click', this.pageChangeEvent.bind(this));
                     this.prevBtn = prevBtn
@@ -45,7 +45,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             //next page button init
             const nextBtnID = paginationElement.getAttribute('data-next-page-button-ID')
             if (nextBtnID !== null) {
-                const nextBtn = document.querySelector('#'+nextBtnID) as HTMLButtonElement|null;
+                const nextBtn = document.getElementById(nextBtnID) as HTMLButtonElement|null;
                 if (nextBtn !== null) {
                     this.listen(nextBtn, 'click', this.pageChangeEvent.bind(this));
                     this.nextBtn = nextBtn
@@ -55,7 +55,7 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             //per page selector init
             const perpageSelectorID = paginationElement.getAttribute('data-perpage-selector-ID')
             if (perpageSelectorID !== null) {
-                const perpageSelector = document.querySelector('#'+perpageSelectorID) as HTMLSelectElement|null;
+                const perpageSelector = document.getElementById(perpageSelectorID) as HTMLSelectElement|null;
                 if (perpageSelector !== null) {
                     this.listen(perpageSelector, 'change', this.perPageChangeEvent.bind(this));
                     this.perpageSelector = perpageSelector
@@ -86,9 +86,12 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
                 this.page = 1;
             }
 
-            const url = this.generateDataUrl(this.pagecountUrl).toString()
+            const url = this.generateDataUrl(this.pagecountUrl).toString();
+            const raw = await this.fetchData(url);
 
-            this.pages = await this.fetchData(url) as number;
+            // Legacy endpoint returns a plain integer. Defensive coerce: reject NaN and negatives.
+            const parsed = typeof raw === 'number' ? raw : parseInt(String(raw));
+            this.pages = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 
             this.renderPagination();
         }
@@ -189,7 +192,9 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
                 return;
             }
 
-            const element = e.target as Element;
+            // Use currentTarget so a click on a nested icon/span inside the button still resolves
+            // to the button itself, not the descendant.
+            const element = (e.currentTarget ?? e.target) as Element;
             let pageChanged = false;
 
             if (element === this.prevBtn && this.page > 1) {
@@ -197,21 +202,23 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
                 pageChanged = true;
             }
 
-
             if (element === this.nextBtn && this.page < this.pages) {
                 this.page += 1;
                 pageChanged = true;
             }
 
-
             const page = element.getAttribute('data-value');
             if (page !== null) {
-                this.page = parseInt(page);
-                pageChanged = true;
+                const parsed = parseInt(page);
+                if (!isNaN(parsed) && parsed >= 1) {
+                    this.page = parsed;
+                    pageChanged = true;
+                }
             }
 
             if (pageChanged) {
-                await this.load()
+                this.userInitiatedLoad = true;
+                await this.load();
             }
         }
 
@@ -222,8 +229,11 @@ export function PaginationMixin<TBase extends Constructor<DataproviderCore>>(Bas
             }
 
             this.perpage = parseInt(this.perpageSelector.value);
+            // Reset to page 1 so we don't land past the end of the resized page set.
+            this.page = 1;
 
-            await this.load()
+            this.userInitiatedLoad = true;
+            await this.load(true);
         }
 
         private updateNavButton(button: HTMLButtonElement | null, shouldDisable: boolean): void {

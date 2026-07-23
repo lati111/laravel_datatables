@@ -2,6 +2,14 @@ import {Datatable} from "./Datatable";
 import {DatalistConstructionError} from "../../Exceptions/DatalistConstructionError";
 import {Item} from "./Data/Item";
 
+/** Escapes a string for safe use in an attribute selector; falls back for jsdom pre-25. */
+function escapeSelector(value: string): string {
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+        return CSS.escape(value);
+    }
+    return value.replace(/(["'\\\]\[])/g, '\\$1');
+}
+
 /** Datatable with multi-select checkboxes and a selection list panel. Extends {@link Datatable}. */
 export class DatatableSelector extends Datatable {
     protected selectList: Element | null = null;
@@ -22,7 +30,7 @@ export class DatatableSelector extends Datatable {
             selectListID = this.dataproviderID + '-select-list';
         }
 
-        this.selectList = document.querySelector('#' + selectListID);
+        this.selectList = document.getElementById(selectListID);
 
         //set selection preload urls
         this.selectionUrl = this.dataprovider.getAttribute('data-selection-url')
@@ -30,7 +38,7 @@ export class DatatableSelector extends Datatable {
 
         //check identifiers
         if (this.itemIdentifierKey === null) {
-            throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector $"' + this.dataproviderID + '"', this.errorCallback)
+            throw new DatalistConstructionError('Attribute "data-identifier-key" is missing on dataselector "#' + this.dataproviderID + '"', this.errorCallback)
         }
     }
 
@@ -54,7 +62,13 @@ export class DatatableSelector extends Datatable {
             this.selectList.innerHTML = '';
         }
 
-        const data = await this.fetchData(this.selectionUrl);
+        const rawData = await this.fetchData(this.selectionUrl);
+        // Unwrap the schema v3 envelope if the endpoint returns one; a legacy endpoint
+        // returns a bare array and stays as-is.
+        const data = (rawData !== null && typeof rawData === 'object' && !Array.isArray(rawData) && 'items' in rawData)
+            ? rawData.items
+            : rawData;
+
         this.allowSelectEvents = false;
 
         let key: keyof typeof data;
@@ -124,7 +138,10 @@ export class DatatableSelector extends Datatable {
      * @return void
      */
     public removeSelectedItemEvent(identifier:string, e:Event) {
-        const element = (e.target as Element).closest('.selected-element') as Element;
+        const element = (e.target as Element).closest('.selected-element');
+        if (element === null) {
+            return;
+        }
         element.remove();
 
         delete this.selectedItems[identifier];
@@ -134,7 +151,7 @@ export class DatatableSelector extends Datatable {
         }
 
         if (this.selectList !== null) {
-            const checkbox = this.body.querySelector('input[data-id="'+identifier+'"]') as HTMLInputElement|null
+            const checkbox = this.body.querySelector('input[data-id="'+escapeSelector(identifier)+'"]') as HTMLInputElement|null
             if (checkbox !== null) {
                 checkbox.checked = false;
             }
@@ -161,7 +178,9 @@ export class DatatableSelector extends Datatable {
      */
     public async clear(): Promise<void> {
         this.selectedItems = {};
-        this.selectList!.innerHTML = '';
+        if (this.selectList !== null) {
+            this.selectList.innerHTML = '';
+        }
         await this.load(true)
     }
 }
